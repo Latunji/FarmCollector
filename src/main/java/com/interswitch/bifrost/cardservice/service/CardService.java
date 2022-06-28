@@ -8,6 +8,9 @@ package com.interswitch.bifrost.cardservice.service;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.interswitch.bifrost.cardservice.exception.CustomException;
+import com.interswitch.bifrost.cardservice.model.Customer;
+import com.interswitch.bifrost.cardservice.model.CustomerDevice;
+import com.interswitch.bifrost.cardservice.model.repo.CustomerRepository;
 import com.interswitch.bifrost.cardservice.response.CardPanDetailsResponse;
 import com.interswitch.bifrost.cardservice.response.CardsResponse;
 import com.interswitch.bifrost.cardservice.response.CustomerDetailsResponse;
@@ -64,6 +67,9 @@ public class CardService {
 
     private static final Logger LOGGER = Logger.getLogger(CardService.class.getName());
 
+    @Autowired
+    private CustomerRepository customerRepo;
+    
     @Autowired
     CardWS cardWS;
     
@@ -228,39 +234,49 @@ public class CardService {
 
 }
     
-    public CardPanDetailsResponse providusGetCards(String accountNumber, String deviceId, String custNum, String institutionCD) {
+    public CardPanDetailsResponse providusGetCards(String deviceId, String institutionCD) {
 
        CardPanDetailsResponse response = new CardPanDetailsResponse(ResponseCode.ERROR, "No card available");
         if (StringUtils.isBlank(deviceId)) {
             response.setDescription("Invalid device");
             return response;
         }
-        if (StringUtils.isBlank(accountNumber)) {
-            response.setDescription("account number is blank");
-            return response;
-        }
-        if (StringUtils.isBlank(custNum)) {
-            response.setDescription("customer number is blank");
-            return response;
-        }
+       
+       
         if (StringUtils.isBlank(institutionCD)) {
             response.setDescription("institution code is blank");
             return response;
         }
         try {
-            ServiceResponse resp = this.validateCustomerWithAccount(deviceId, accountNumber, institutionCD);
-            String custNo;
-            if (resp != null) {
-                if (resp.getCode() != 0) {
-                    LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", resp.toString()));
-                    return new CardPanDetailsResponse(ResponseCode.ERROR, "ERROR VALIDATING CUSTOMER");
-                }
-
-            } else {
-                LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", resp.toString()));
-                return new CardPanDetailsResponse(ResponseCode.ERROR_INTERNAL, "NO DATA FROM VALIDATION");
+            System.out.print("Before customer repo");
+            CustomerDevice customerDevice = customerRepo.findCustomerDeviceAndInstitution(deviceId, institutionCD);
+            
+            if (customerDevice == null) {
+                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer device does not exist");   
             }
-
+            
+             Customer customer = customerDevice.getCustomer();
+            if (customer == null){
+                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer does not exist"); 
+            }
+            
+            String custNum = customer.getCustNo();
+   
+            String accountNumber = customer.getPrimaryAccountNumber();
+            System.out.print("Account number is " + accountNumber);
+            System.out.print("Account number is " + custNum);
+            
+            LOGGER.log(Level.INFO, String.format("%s - %s", " response  ", accountNumber, custNum));
+            
+             if (accountNumber.isEmpty()){
+                return new CardPanDetailsResponse(ResponseCode.ERROR, "Account number does not exist");
+            }
+            
+            if (custNum.isEmpty()){
+                return new CardPanDetailsResponse(ResponseCode.ERROR, "CustNo does not exist");
+            }
+            
+            System.out.print("Before gatewaycall");
             String bankserviceResponseJSON = cardWS.getProvidusCards(accountNumber, custNum, institutionCD);
             LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
             // String bankserviceResponseJSON = backendWS.getAccounts(customer.getPrimaryAccountNumber());
@@ -269,10 +285,11 @@ public class CardService {
                     .create();
 
             GetTokenizationResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetTokenizationResponse.class);
-         
+            LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankResp));
+             System.out.print("gateway responsecode  -----------" + bankResp.getResponseCode() );
             if (bankResp != null && bankResp.getResponseCode().equalsIgnoreCase("0"))//&& bankResp.length > 0) 
             {
-                
+                System.out.print("gateway was successful");
                 String cipherText = bankResp.getText();
                 String mockCipherText = "ZzkfDVjhi392+Xk6tMNln6kNLg5nPkGkUQ1ICCjpagpzNB+e0nJde6z8sTN6W+4bTA5VseTcP04yeXkOOLS8vtmPuI+gf16Z2o6cQzCnWbIFr/nSV6yqMHn3IZAN++oeNkX3I4er2YrL0mu/91x6fAwgWEfVq7Vq6NqIdzlVZhYu7k2sqWxIZ1/J/kFBwyHwNc3OzzhH+3PzVA3pUO4WF9gKArf0knlMl1aYNViHYvCa/GL2DqZ3D5EVP3d4kxhsWbsL4hLOgyMxSK9m1gmuYkudCe54Hzd82cu/qpnox41vnvMhwUAHOYHJlQtwx9LnLtfGAxe6QItd5nvthmkJDWWLa+vH48FB0OqOU0/3xWs=";
                 
@@ -298,6 +315,7 @@ public class CardService {
             return response;
         } catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s", "GET CARDS ERROR ", ex));
+            
             return new CardPanDetailsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
     }

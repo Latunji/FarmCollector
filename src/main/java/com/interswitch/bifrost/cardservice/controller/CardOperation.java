@@ -100,25 +100,21 @@ public class CardOperation {
     }
     
     
-    @Secured
+
     @Async("threadPool")
     @Encrypted(isOptional = true)
     @GetMapping("providusGetCards")
-    public CompletableFuture<CardPanDetailsResponse> providusGetcards(@RequestParam("accountNumber") String accountNumber, @RequestParam("custNo") String custNo) {
+    public CompletableFuture<CardPanDetailsResponse> providusGetcards(@RequestParam("deviceId") String deviceId, @RequestParam("institutionCD") String institutionCD) {
 
-        SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
-        AuthenticatedUser user = (AuthenticatedUser) sessionDetail.getPrincipal();
-        LOGGER.info(String.format("%s - %s- %s, %s", "CARDS-TOKEN", user.getUserName(), user.getDeviceId(), ""));
-        //LOGGER.info(String.format("%s - %s, %s", "CARDS", "", ""));
-        CardPanDetailsResponse response = new CardPanDetailsResponse(10);
+      CardPanDetailsResponse response = new CardPanDetailsResponse(10);
         try {
-            response = cardService.providusGetCards(accountNumber, sessionDetail.getDeviceId(), custNo, sessionDetail.getInstitutionCD());
+            response = cardService.providusGetCards(deviceId, institutionCD);
         } catch (Exception ex) {
-            //log exception if occured
-            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET Tokenization EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
-            //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS EXCEPTION", ""), ex);
+           
+            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET Tokenization EXCEPTION", institutionCD, deviceId), ex);
+            
             response.setDescription("ERROR");
-            //return response;
+        
         }
         LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS_TOKEN FINAL RESPONSE", response.toString() ));
         return CompletableFuture.completedFuture(response);
