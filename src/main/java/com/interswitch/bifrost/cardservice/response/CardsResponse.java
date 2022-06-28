@@ -70,24 +70,24 @@ public class CardsResponse extends ServiceResponse {
          
      }
      
-//     static public void main(String[] args)
-//     {
-//         List<Cards> allCards = new ArrayList<Cards>();
-//         
-//         Cards card1 = new Cards();
-//         card1.setCardPan("1234567890296459");
-//        Cards card2 = new Cards();
-//         card2.setCardPan("0987654321098765");
-//         
-//         allCards.add(card1);
-//         allCards.add(card2);
-//         
-//         CardsResponse response = new CardsResponse(0);
-//         response.setMaskedCards(allCards);
-//         
-//         response.printCardPan();
-//     }
-//     
+     static public void main(String[] args) throws Exception
+     {
+         List<Cards> allCards = new ArrayList<Cards>();
+         
+         Cards card1 = new Cards();
+         card1.setCardPan("1234567890296459");
+        Cards card2 = new Cards();
+         card2.setCardPan("0987654321098765");
+         
+         allCards.add(card1);
+         allCards.add(card2);
+         
+         CardsResponse response = new CardsResponse(0);
+         response.setMaskedCards("ben", allCards);
+         
+         response.printCardPan();
+     }
+     
      private void printCardPan()
      {
          for( Cards card: this.getCards())

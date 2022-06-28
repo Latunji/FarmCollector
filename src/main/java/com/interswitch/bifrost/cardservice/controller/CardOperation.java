@@ -7,6 +7,7 @@ package com.interswitch.bifrost.cardservice.controller;
 
 //import com.interswitch.bifrost.cardservice.request.GetCardRequest;
 import com.interswitch.bifrost.cardservice.request.GenericRequest;
+import com.interswitch.bifrost.cardservice.response.CardPanDetailsResponse;
 import com.interswitch.bifrost.cardservice.service.CardService;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
 import org.springframework.validation.annotation.Validated;
@@ -97,7 +98,33 @@ public class CardOperation {
         // LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS FINAL RESPONSE", response.toString() ));
         return CompletableFuture.completedFuture(response);
     }
+    
+    
+    @Secured
+    @Async("threadPool")
+    @Encrypted(isOptional = true)
+    @GetMapping("providusGetCards")
+    public CompletableFuture<CardPanDetailsResponse> providusGetcards(@RequestParam("accountNumber") String accountNumber, @RequestParam("custNo") String custNo) {
 
+        SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
+        AuthenticatedUser user = (AuthenticatedUser) sessionDetail.getPrincipal();
+        LOGGER.info(String.format("%s - %s- %s, %s", "CARDS-TOKEN", user.getUserName(), user.getDeviceId(), ""));
+        //LOGGER.info(String.format("%s - %s, %s", "CARDS", "", ""));
+        CardPanDetailsResponse response = new CardPanDetailsResponse(10);
+        try {
+            response = cardService.providusGetCards(accountNumber, sessionDetail.getDeviceId(), custNo, sessionDetail.getInstitutionCD());
+        } catch (Exception ex) {
+            //log exception if occured
+            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET Tokenization EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
+            //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS EXCEPTION", ""), ex);
+            response.setDescription("ERROR");
+            //return response;
+        }
+        LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS_TOKEN FINAL RESPONSE", response.toString() ));
+        return CompletableFuture.completedFuture(response);
+    }
+    
+    
     @Secured
     @Async("threadPool")
     @Encrypted(isOptional = true)
