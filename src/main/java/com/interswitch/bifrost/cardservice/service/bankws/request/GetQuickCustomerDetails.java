@@ -39,4 +39,6 @@ public class GetQuickCustomerDetails {
     //@Size(min=1 ,message="invalid institution CD") 
     //@NotBlank(message="institution cd cannot be blank")
     //private String institutionCD;
+    
+    
 }

@@ -7,6 +7,7 @@ package com.interswitch.bifrost.cardservice.controller;
 
 //import com.interswitch.bifrost.cardservice.request.GetCardRequest;
 import com.interswitch.bifrost.cardservice.request.GenericRequest;
+import com.interswitch.bifrost.cardservice.response.CardPanDetailsResponse;
 import com.interswitch.bifrost.cardservice.service.CardService;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
 import org.springframework.validation.annotation.Validated;
@@ -97,7 +98,29 @@ public class CardOperation {
         // LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS FINAL RESPONSE", response.toString() ));
         return CompletableFuture.completedFuture(response);
     }
+    
+    
 
+    @Async("threadPool")
+    @Encrypted(isOptional = true)
+    @GetMapping("providusGetCards")
+    public CompletableFuture<CardPanDetailsResponse> providusGetcards(@RequestParam("deviceId") String deviceId, @RequestParam("institutionCD") String institutionCD) {
+
+      CardPanDetailsResponse response = new CardPanDetailsResponse(10);
+        try {
+            response = cardService.providusGetCards(deviceId, institutionCD);
+        } catch (Exception ex) {
+           
+            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET Tokenization EXCEPTION", institutionCD, deviceId), ex);
+            
+            response.setDescription("ERROR");
+        
+        }
+        LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS_TOKEN FINAL RESPONSE", response.toString() ));
+        return CompletableFuture.completedFuture(response);
+    }
+    
+    
     @Secured
     @Async("threadPool")
     @Encrypted(isOptional = true)
