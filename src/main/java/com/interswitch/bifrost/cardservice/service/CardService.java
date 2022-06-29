@@ -69,10 +69,10 @@ public class CardService {
 
     @Autowired
     private CustomerRepository customerRepo;
-    
+
     @Autowired
     CardWS cardWS;
-    
+
     @Autowired
     private ConfigProperties configx;
 
@@ -86,11 +86,9 @@ public class CardService {
 
     @Value("${isw.token.issuer}")
     String tokenIssuerId;
-    
 
     //@Value("classpath:private.key")
     //Resource resourceFile;
-
 //    public CustomerDetailsResponse validateCustomer(String deviceId,String institutionCD)
 //    {
 //        LOGGER.info(String.format(" %s- %s", "VALIDATE CUSTOMER",deviceId));
@@ -126,7 +124,8 @@ public class CardService {
             response = gs.fromJson(bankserviceResponseJSON, ServiceResponse.class);
 
             return response;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s", "ACTIVATE CUSTOMER ERROR ", ex));
             return new ServiceResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
@@ -146,7 +145,8 @@ public class CardService {
             response = gs.fromJson(bankserviceResponseJSON, ServiceResponse.class);
 
             return response;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s", "VALIDATE CUSTOMER WITH ACCOUNT  ERROR ", ex));
             return new ServiceResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
@@ -208,41 +208,39 @@ public class CardService {
             }
             response.setDescription("NO VALUE OBTAINED");
             return response;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s", "GET CARDS ERROR ", ex));
             return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
     }
 
-    
-    
-     public static String decryptResponse(String algorithm, String cipherText, String key,
-    String iv) throws NoSuchPaddingException, NoSuchAlgorithmException,
-    InvalidAlgorithmParameterException, InvalidKeyException,
-    BadPaddingException, IllegalBlockSizeException {
-    byte[] decodedKey = Base64.getDecoder().decode(key);
-    SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+    public static String decryptResponse(String algorithm, String cipherText, String key,
+            String iv) throws NoSuchPaddingException, NoSuchAlgorithmException,
+            InvalidAlgorithmParameterException, InvalidKeyException,
+            BadPaddingException, IllegalBlockSizeException {
+        byte[] decodedKey = Base64.getDecoder().decode(key);
+        SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
 
-    IvParameterSpec ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
 
-    Cipher cipher = Cipher.getInstance(algorithm);
-    cipher.init(Cipher.DECRYPT_MODE, originalKey, ivParameterSpec);
-    byte[] plainText = cipher.doFinal(Base64.getDecoder()
-        .decode(cipherText));
-    return new String(plainText);
-    
+        Cipher cipher = Cipher.getInstance(algorithm);
+        cipher.init(Cipher.DECRYPT_MODE, originalKey, ivParameterSpec);
+        byte[] plainText = cipher.doFinal(Base64.getDecoder()
+                .decode(cipherText));
+        return new String(plainText);
 
-}
-    
+    }
+
     public CardPanDetailsResponse providusGetCards(String deviceId, String institutionCD) {
+         LOGGER.log(Level.INFO, "GET PROVIDUS CARDS INITIALIZED");
 
-       CardPanDetailsResponse response = new CardPanDetailsResponse(ResponseCode.ERROR, "No card available");
+        CardPanDetailsResponse response = new CardPanDetailsResponse(ResponseCode.ERROR, "No card available");
         if (StringUtils.isBlank(deviceId)) {
             response.setDescription("Invalid device");
             return response;
         }
-       
-       
+
         if (StringUtils.isBlank(institutionCD)) {
             response.setDescription("institution code is blank");
             return response;
@@ -250,58 +248,50 @@ public class CardService {
         try {
             System.out.print("Before customer repo");
             CustomerDevice customerDevice = customerRepo.findCustomerDeviceAndInstitution(deviceId, institutionCD);
-            
+
             if (customerDevice == null) {
-                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer device does not exist");   
+                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer device does not exist");
             }
-            
-             Customer customer = customerDevice.getCustomer();
-            if (customer == null){
-                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer does not exist"); 
+
+            Customer customer = customerDevice.getCustomer();
+            if (customer == null) {
+                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer does not exist");
             }
-            
+
             String custNum = customer.getCustNo();
-   
-            String accountNumber = customer.getPrimaryAccountNumber();
-            System.out.print("Account number is " + accountNumber);
-            System.out.print("Account number is " + custNum);
-            
-            LOGGER.log(Level.INFO, String.format("%s - %s", " response  ", accountNumber, custNum));
-            
-             if (accountNumber.isEmpty()){
-                return new CardPanDetailsResponse(ResponseCode.ERROR, "Account number does not exist");
-            }
-            
-            if (custNum.isEmpty()){
+
+            LOGGER.log(Level.INFO, String.format("customer Number - %s", custNum));
+
+            if (custNum.isEmpty()) {
                 return new CardPanDetailsResponse(ResponseCode.ERROR, "CustNo does not exist");
             }
-            
-            System.out.print("Before gatewaycall");
-            String bankserviceResponseJSON = cardWS.getProvidusCards(accountNumber, custNum, institutionCD);
+
+            LOGGER.log(Level.INFO, "Before gatewaycall");
+            String bankserviceResponseJSON = cardWS.getProvidusCards(custNum, institutionCD);
             LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
-            // String bankserviceResponseJSON = backendWS.getAccounts(customer.getPrimaryAccountNumber());
+ 
             Gson gs = new GsonBuilder()
                     .excludeFieldsWithModifiers(Modifier.TRANSIENT)
                     .create();
 
             GetTokenizationResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetTokenizationResponse.class);
             LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankResp));
-             System.out.print("gateway responsecode  -----------" + bankResp.getResponseCode() );
+            LOGGER.log(Level.INFO, "gateway responsecode  -----------" + bankResp.getResponseCode());
             if (bankResp != null && bankResp.getResponseCode().equalsIgnoreCase("0"))//&& bankResp.length > 0) 
             {
-                System.out.print("gateway was successful");
+                LOGGER.log(Level.INFO, "gateway was successful");
                 String cipherText = bankResp.getText();
                 String mockCipherText = "ZzkfDVjhi392+Xk6tMNln6kNLg5nPkGkUQ1ICCjpagpzNB+e0nJde6z8sTN6W+4bTA5VseTcP04yeXkOOLS8vtmPuI+gf16Z2o6cQzCnWbIFr/nSV6yqMHn3IZAN++oeNkX3I4er2YrL0mu/91x6fAwgWEfVq7Vq6NqIdzlVZhYu7k2sqWxIZ1/J/kFBwyHwNc3OzzhH+3PzVA3pUO4WF9gKArf0knlMl1aYNViHYvCa/GL2DqZ3D5EVP3d4kxhsWbsL4hLOgyMxSK9m1gmuYkudCe54Hzd82cu/qpnox41vnvMhwUAHOYHJlQtwx9LnLtfGAxe6QItd5nvthmkJDWWLa+vH48FB0OqOU0/3xWs=";
-                
-                if (custNum.equals("65347")){
+
+                if (custNum.equals("65347")) {
                     cipherText = mockCipherText;
                 }
                 String algorithm = "AES/CBC/PKCS5Padding";
                 String secretKey = configx.getSecretKeyProvidus(institutionCD);
                 String iv = configx.getIvProvidus(institutionCD);
-                
+
                 String cardDetails = decryptResponse(algorithm, cipherText, secretKey, iv);
-                
+
                 CardPanDetailsResponse panDetails = gs.fromJson(cardDetails, CardPanDetailsResponse.class);
 
                 response.setCode(0);
@@ -312,15 +302,15 @@ public class CardService {
                 return response;
             }
             response.setDescription("NO VALUE OBTAINED");
+            response.setCode(10);
             return response;
-        } catch (Exception ex) {
-            LOGGER.info(String.format(" %s- %s", "GET CARDS ERROR ", ex));
-            
+        }
+        catch (Exception ex) {
+            LOGGER.log(Level.INFO, String.format(" %s- %s", "GET CARDS ERROR ", ex));
             return new CardPanDetailsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
     }
 
-    
     public ServiceResponse activateAccountWithCard(String accountNumber, String deviceId, String missingDigits, String custNo, String institutionCD) {
 
         ServiceResponse response = new ServiceResponse(ResponseCode.ERROR, "error");
@@ -368,7 +358,8 @@ public class CardService {
             }
             response.setDescription("NO VALUE OBTAINED");
             return response;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s", "ACTIVATE CUSTOMER WITH CARDS ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE + ex);
         }
@@ -420,7 +411,8 @@ public class CardService {
             String bankserviceResponseJSON = cardWS.getCustomerDetails(cardPan, cardPin, institutionCD);
             response = gs.fromJson(bankserviceResponseJSON, CustomerDetailsResponse.class);
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s", "GET CARD CUSTOMER DETAILS ERROR ", ex));
             return new CustomerDetailsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
@@ -474,7 +466,8 @@ public class CardService {
             }
             response.setDescription("NO VALUE OBTAINED");
             return response;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s", "GET MASKED CARDS ERROR ", ex));
             return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
@@ -534,10 +527,12 @@ public class CardService {
             }
             response.setDescription("NO VALUE OBTAINED");
             return response;
-        } catch (CustomException ex) {
+        }
+        catch (CustomException ex) {
             LOGGER.info(String.format(" %s- %s -%s", "HOTLIST CARDS ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ex.getErrorMessage());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s -%s", "HOTLIST CARDS ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
@@ -547,7 +542,8 @@ public class CardService {
         String response = "";
         try {
             response = cipher.decrypt(accountNumber, cardPan);
-        } catch (NoSuchAlgorithmException
+        }
+        catch (NoSuchAlgorithmException
                 | InvalidKeySpecException
                 | NoSuchPaddingException
                 | InvalidKeyException
@@ -624,7 +620,8 @@ public class CardService {
                 return response;
             }
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s -%s", "REQUEST CARD ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
@@ -692,10 +689,12 @@ public class CardService {
             }
             response.setDescription("NO VALUE OBTAINED");
             return response;
-        } catch (CustomException ex) {
+        }
+        catch (CustomException ex) {
             LOGGER.info(String.format(" %s- %s -%s", "REPLACE CARDS ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ex.getErrorMessage());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s - %s", "REPLACE CARDS ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
@@ -755,10 +754,12 @@ public class CardService {
             }
             response.setDescription(ResponseCode.GENERAL_ERROR_MESSAGE);
             return response;
-        } catch (CustomException ex) {
+        }
+        catch (CustomException ex) {
             LOGGER.info(String.format(" %s- %s - %s", "UNBLOCK CARDS ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ex.getErrorMessage());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.info(String.format(" %s- %s - %s", "UNBLOCK CARDS ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
@@ -801,15 +802,18 @@ public class CardService {
             while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
-        } catch (Throwable localThrowable1) {
+        }
+        catch (Throwable localThrowable1) {
             localThrowable3 = localThrowable1;
             throw localThrowable1;
-        } finally {
+        }
+        finally {
             if (br != null) {
                 if (localThrowable3 != null) {
                     try {
                         br.close();
-                    } catch (Throwable localThrowable2) {
+                    }
+                    catch (Throwable localThrowable2) {
                         localThrowable3.addSuppressed(localThrowable2);
                     }
                 } else {
@@ -821,6 +825,5 @@ public class CardService {
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return kf.generatePrivate(spec);
     }
-    
-    
+
 }

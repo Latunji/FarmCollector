@@ -11,7 +11,7 @@ package com.interswitch.bifrost.cardservice.request;
  */
 
 
-public class Credential {
+public class ProvidusCardRequest {
    String apiKey;
    String authId;
    String appId; 

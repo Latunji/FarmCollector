@@ -7,7 +7,7 @@ package com.interswitch.bifrost.cardservice.service.bankws.impl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.interswitch.bifrost.cardservice.request.Credential;
+import com.interswitch.bifrost.cardservice.request.ProvidusCardRequest;
 import com.interswitch.bifrost.cardservice.response.CustomerDetailsResponse;
 import com.interswitch.bifrost.cardservice.service.bankws.CardWS;
 import com.interswitch.bifrost.cardservice.service.bankws.request.CustDetailsRequest;
@@ -227,41 +227,40 @@ public class CardWSImpl implements CardWS {
 
     }
 
-        
-    public String getProvidusCards(String accountNumber, String customerNo, String institutionCD) throws Exception {
-        LOGGER.log(Level.SEVERE, String.format("%s - %s ", "GET CARD-TOKEN ", configx.getBankBaseUrl(institutionCD)), configx.getBankGatewayUrl(institutionCD));
-        Response response = null;
+    
+    @Override
+    public String getProvidusCards(String customerNo, String institutionCD) throws Exception {
+        LOGGER.log(Level.INFO, String.format("%s - %s ", "GET CARD-TOKEN INITIALIZED", configx.getBankBaseUrl(institutionCD)), configx.getBankGatewayUrl(institutionCD));
+        Response response;
         try {
             ObjectMapper mapper = new ObjectMapper();
+            
             String apiKey = configx.getAPIKey(institutionCD);
             String authId = configx.getAuthID(institutionCD);
             String appId = configx.getAppID(institutionCD);
-            Credential cred = new Credential();
+         
+            ProvidusCardRequest cred = new ProvidusCardRequest();
+            
             cred.setApiKey(apiKey);
             cred.setAuthId(authId);
             cred.setAppId(appId);
             cred.setInstitutionCD(institutionCD);
             cred.setCustNo(customerNo);
             cred.setClientUrl(configx.getBankBaseUrl(institutionCD));
+            
             OkHttpClient client = new OkHttpClient();
             MediaType mediaType = MediaType.parse("application/json");  
             String ss = mapper.writeValueAsString(cred);
             RequestBody body = RequestBody.create(mediaType, ss);
-            LOGGER.log(Level.INFO, String.format("%s - %s", "InstitutionCD", configx.getVersionedUrl(institutionCD)));   
+            LOGGER.log(Level.INFO, String.format("%s - %s", "Providus getCard request", ss));   
 //
             HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCD) + "providusGetCards").newBuilder();
-//            urlBuilder.addQueryParameter("custNo", customerNo);
-//            urlBuilder.addQueryParameter("accountNumber", accountNumber);
-//            urlBuilder.addQueryParameter("apiKey", apiKey);
-//            urlBuilder.addQueryParameter("authId", authId);
-//            urlBuilder.addQueryParameter("appId", appId);
-//            urlBuilder.addQueryParameter("clientUrl", configx.getBankBaseUrl(institutionCD));
             
             String url = urlBuilder.build().toString();
-             LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
+            LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
             LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for bank ", configx.getBankBaseUrl(institutionCD) + "card"));
-            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCD) + "getCards"));
-            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request for get cards", url));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCD) + "providusGetCards"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request url for get cards", url));
 
             Request request = new Request.Builder()
                    .url(url)
@@ -272,7 +271,7 @@ public class CardWSImpl implements CardWS {
          
             response = client.newCall(request).execute();
             String responseBody = response.body().string();
-            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "bank response", responseBody));
+            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "Gateway2 response", responseBody));
             return responseBody;
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET Tokenization EXCEPTION", ""), ex);

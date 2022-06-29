@@ -65,7 +65,8 @@ public class CardOperation {
         ServiceResponse response = new CardsResponse(10);
         try {
             response = cardService.activateAccountWithCard(payload.getAccountNumber(), payload.getDeviceId(), payload.getMissingDigit(), payload.getCustNo(), payload.getInstitutionCD());//cardService.getMyCards(payload.getAccountNumber(),sessionDetail.getDeviceId(),payload.getCustNo());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             //log exception if occured
             LOGGER.log(Level.SEVERE, String.format("%s - %s", "VALIDATE CARDS EXCEPTION", payload.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS EXCEPTION", ""), ex);
@@ -88,7 +89,8 @@ public class CardOperation {
         CardsResponse response = new CardsResponse(10);
         try {
             response = cardService.getMyCards(accountNumber, sessionDetail.getDeviceId(), custNo, sessionDetail.getInstitutionCD());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             //log exception if occured
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET CARDS EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS EXCEPTION", ""), ex);
@@ -98,29 +100,26 @@ public class CardOperation {
         // LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS FINAL RESPONSE", response.toString() ));
         return CompletableFuture.completedFuture(response);
     }
-    
-    
 
     @Async("threadPool")
     @Encrypted(isOptional = true)
     @GetMapping("providusGetCards")
     public CompletableFuture<CardPanDetailsResponse> providusGetcards(@RequestParam("deviceId") String deviceId, @RequestParam("institutionCD") String institutionCD) {
 
-      CardPanDetailsResponse response = new CardPanDetailsResponse(10);
+        CardPanDetailsResponse response = new CardPanDetailsResponse(10);
         try {
             response = cardService.providusGetCards(deviceId, institutionCD);
-        } catch (Exception ex) {
-           
-            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET Tokenization EXCEPTION", institutionCD, deviceId), ex);
-            
-            response.setDescription("ERROR");
-        
         }
-        LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS_TOKEN FINAL RESPONSE", response.toString() ));
+        catch (Exception ex) {
+
+            LOGGER.log(Level.SEVERE, String.format("GET Tokenization EXCEPTION - %s, %s", institutionCD, deviceId), ex);
+            response.setDescription("ERROR");
+
+        }
+        //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS_TOKEN FINAL RESPONSE", response.toString() ));
         return CompletableFuture.completedFuture(response);
     }
-    
-    
+
     @Secured
     @Async("threadPool")
     @Encrypted(isOptional = true)
@@ -135,7 +134,8 @@ public class CardOperation {
         try {
             //response =  cardService.getMaskedCards(payload.getAccountNumber(),sessionDetail.getDeviceId(),payload.getCustNo(),sessionDetail.getInstitutionCD());
             response = cardService.getMyCards(payload.getAccountNumber(), sessionDetail.getDeviceId(), payload.getCustNo(), sessionDetail.getInstitutionCD());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             //log exception if occured
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET MASKED CARDS EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS EXCEPTION", ""), ex);
@@ -158,7 +158,8 @@ public class CardOperation {
         ServiceResponse response = new ServiceResponse(10);
         try {
             response = cardService.activateAccountWithCard(payload.getAccountNumber(), sessionDetail.getDeviceId(), payload.getMissingDigit(), payload.getCustNo(), sessionDetail.getInstitutionCD());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             //log exception if occured
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "ACTIVATE CUSTOMER WITH CARDS EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS EXCEPTION", ""), ex);
@@ -180,7 +181,8 @@ public class CardOperation {
         ServiceResponse response = new ServiceResponse(10);
         try {
             response = cardService.hotlistCards(payload.getAccountNumber(), payload.getCardPan(), user.getDeviceId(), sessionDetail.getInstitutionCD());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "HOTLIST CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "HOTLIST CARD EXCEPTION", ""), ex);
             response.setDescription("ERROR");
@@ -202,7 +204,8 @@ public class CardOperation {
         try {
             response = cardService.requestCard(payload.getAccountNumber(), user.getDeviceId(),
                     payload.getCardType(), payload.getNameOnCard(), sessionDetail.getInstitutionCD(), payload.getBranchCode()); //.hotlistCards(payload.getAccountNumber(), payload.getCardPan(),payload.getCustNo());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "REQUEST CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "REQUEST CARD EXCEPTION", ""), ex);
             response.setDescription("ERROR");
@@ -225,7 +228,8 @@ public class CardOperation {
             response = cardService.replacCard(payload.getAccountNumber(), user.getDeviceId(),
                     payload.getCardPan(), payload.getDeliveryType(),
                     payload.getDeliveryAddress(), sessionDetail.getInstitutionCD());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s -%s", "REPLACE CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "REPLACE CARD EXCEPTION", ""), ex);
             response.setDescription("ERROR");
@@ -246,7 +250,8 @@ public class CardOperation {
         ServiceResponse response = new ServiceResponse(10);
         try {
             response = cardService.getCustomerDetails(payload.getCardPan(), payload.getCardPin(), sessionDetail.getInstitutionCD());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s -%s", "GET CUSTOMER DETAILS EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "REPLACE CARD EXCEPTION", ""), ex);
             response.setDescription("ERROR");
@@ -267,7 +272,8 @@ public class CardOperation {
         ServiceResponse response = new ServiceResponse(10);
         try {
             response = cardService.unblockCard(payload.getAccountNumber(), sessionDetail.getDeviceId(), payload.getCardPan(), sessionDetail.getInstitutionCD());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "UNBLOCK CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             //LOGGER.log(Level.SEVERE, String.format("%s - %s", "HOTLIST CARD EXCEPTION", ""), ex);
             response.setDescription(ResponseCode.GENERAL_ERROR_MESSAGE);
@@ -287,7 +293,8 @@ public class CardOperation {
         try {
             String response = cardService.calculateJwtToken(panLastFour);
             rspJson.put("token", response);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s", new Object[]{"GET CARD TOKEN EXCEPTION", ""}), ex);
 
             rspJson.put("error", "request could not be completed");
@@ -295,7 +302,5 @@ public class CardOperation {
         LOGGER.log(Level.SEVERE, String.format("%s - %s \n Key: %s", new Object[]{"GET TOKEN FINAL RESPONSE :", rspJson.toString(), this.tokenKey}));
         return CompletableFuture.completedFuture(rspJson.toString());
     }
-    
-
 
 }
