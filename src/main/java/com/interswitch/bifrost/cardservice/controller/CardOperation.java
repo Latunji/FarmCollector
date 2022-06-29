@@ -272,5 +272,7 @@ public class CardOperation {
         LOGGER.log(Level.SEVERE, String.format("%s - %s \n Key: %s", new Object[]{"GET TOKEN FINAL RESPONSE :", rspJson.toString(), this.tokenKey}));
         return CompletableFuture.completedFuture(rspJson.toString());
     }
+    
+
 
 }

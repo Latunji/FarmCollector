@@ -15,6 +15,7 @@ public class HotlistCardRequest {
     private String cardPan;
     private String accountNumber; 
     private String clientUrl;
+    private String reference;
     private String institutionCD;
     private String apiKey;
     private String authId;
@@ -80,6 +81,16 @@ public class HotlistCardRequest {
 
     public void setCardPan(String cardPan) {
         this.cardPan = cardPan;
-    }    
+    } 
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+    
+    
         
 }
