@@ -247,24 +247,33 @@ public class CardService {
             response.setDescription("institution code is blank");
             return response;
         }
+        
+        deviceId = deviceId.trim();
+        institutionCD = institutionCD.trim();
+        
+        LOGGER.log(Level.INFO, String.format("instititionCD: %s - deviceId: %s", institutionCD, deviceId));
+        
         try {
-            System.out.print("Before customer repo");
-            CustomerDevice customerDevice = customerRepo.findCustomerDeviceAndInstitution(deviceId, institutionCD);
             
-            if (customerDevice == null) {
-                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer device does not exist");   
+            
+//            Customer customer = customerRepo.findByCustomerDeviceAndInstitution(deviceId, institutionCD);
+              CustomerDevice customerDevice = customerRepo.findCustomerDeviceAndInstitution(deviceId, institutionCD);
+                      
+            
+            if (customerDevice == null){
+                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer device does not exist"); 
             }
             
-             Customer customer = customerDevice.getCustomer();
+            Customer customer = customerDevice.getCustomer();
+            
             if (customer == null){
-                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer does not exist"); 
+                return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer does not exist");
             }
             
             String custNum = customer.getCustNo();
    
             String accountNumber = customer.getPrimaryAccountNumber();
-            System.out.print("Account number is " + accountNumber);
-            System.out.print("Account number is " + custNum);
+  
             
             LOGGER.log(Level.INFO, String.format("%s - %s", " response  ", accountNumber, custNum));
             

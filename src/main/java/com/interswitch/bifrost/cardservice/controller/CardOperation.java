@@ -105,7 +105,7 @@ public class CardOperation {
     @Encrypted(isOptional = true)
     @GetMapping("providusGetCards")
     public CompletableFuture<CardPanDetailsResponse> providusGetcards(@RequestParam("deviceId") String deviceId, @RequestParam("institutionCD") String institutionCD) {
-
+        LOGGER.log(Level.INFO, String.format("instititionCD: %s - deviceId: %s", institutionCD, deviceId));
       CardPanDetailsResponse response = new CardPanDetailsResponse(10);
         try {
             response = cardService.providusGetCards(deviceId, institutionCD);
@@ -116,7 +116,7 @@ public class CardOperation {
             response.setDescription("ERROR");
         
         }
-        LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS_TOKEN FINAL RESPONSE", response.toString() ));
+        
         return CompletableFuture.completedFuture(response);
     }
     
