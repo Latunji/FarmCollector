@@ -29,6 +29,7 @@ import javax.persistence.Temporal;
     @NamedQuery(name = "CustomerDevice.findByDeviceIdAndCustomerId", query = "SELECT s FROM CustomerDevice s WHERE s.device.uniqueId = :deviceId AND s.customer.id = :customerId"),
     @NamedQuery(name = "CustomerDevice.findByDeviceIdAndInstitutionId", query = "SELECT s FROM CustomerDevice s WHERE s.device.uniqueId = :deviceId AND s.customer.institution.code = :insCode"),
     @NamedQuery(name = "CustomerDevice.findByIdAndInstitutionId", query = "SELECT s FROM CustomerDevice s WHERE s.id = :id AND s.customer.institution.code = :insCode"),
+    @NamedQuery(name = "CustomerDevice.findAll", query = "SELECT s FROM CustomerDevice s"),
     @NamedQuery(name = "CustomerDevice.removeById", query = "DELETE FROM CustomerDevice s WHERE s.id = :id")
 })
 public class CustomerDevice implements Serializable {

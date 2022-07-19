@@ -245,7 +245,14 @@ public class CardService {
             response.setDescription("institution code is blank");
             return response;
         }
+        
+        deviceId = deviceId.trim();
+        institutionCD = institutionCD.trim();
+        
+        LOGGER.log(Level.INFO, String.format("instititionCD: %s - deviceId: %s", institutionCD, deviceId));
+        
         try {
+
             System.out.print("Before customer repo");
             CustomerDevice customerDevice = customerRepo.findCustomerDeviceAndInstitution(deviceId, institutionCD);
 
@@ -254,15 +261,19 @@ public class CardService {
             }
 
             Customer customer = customerDevice.getCustomer();
-            if (customer == null) {
+
+            
+            if (customer == null){
+
                 return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer does not exist");
             }
 
             String custNum = customer.getCustNo();
 
-            LOGGER.log(Level.INFO, String.format("customer Number - %s", custNum));
 
-            if (custNum.isEmpty()) {
+            LOGGER.log(Level.INFO, String.format("customer Number - %s", custNum));
+            
+            if (custNum.isEmpty()){
                 return new CardPanDetailsResponse(ResponseCode.ERROR, "CustNo does not exist");
             }
 

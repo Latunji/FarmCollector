@@ -13,6 +13,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import java.io.Serializable;
 import java.util.Date;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -20,6 +22,7 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "Customers")
+@Transactional(isolation = Isolation.READ_UNCOMMITTED)
 @NamedQueries({
     @NamedQuery(name = "Customer.findByBankID", query = "SELECT c FROM Customer c WHERE c.bankID = :bankID AND c.institution.code = :insCode"),
     @NamedQuery(name = "Customer.findByInstitutionID", query = "SELECT c FROM Customer c WHERE c.institution.code = :insCode"),
