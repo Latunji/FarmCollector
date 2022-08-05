@@ -47,9 +47,9 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     @Override
-    public Customer findByCustomerDeviceAndInstitution(String deviceId, String institutionCD) {
+    public CustomerDevice findByCustomerDeviceAndInstitution(String deviceId, String institutionCD) {
         LOGGER.log(Level.INFO, String.format("ATREPOinstititionCD: %s - ATREPOdeviceId: %s", institutionCD, deviceId));
-        List<Customer> list = manager.createNamedQuery("Customer.findByDeviceIdAndInsCode", Customer.class).
+        List<CustomerDevice> list = manager.createNamedQuery("CustomerDevice.findByDeviceIdAndInstitutionId", CustomerDevice.class).
                 setParameter("deviceId", deviceId).
                 setParameter("insCode", institutionCD).
                 getResultList();

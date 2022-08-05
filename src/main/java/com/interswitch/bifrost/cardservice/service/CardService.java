@@ -250,11 +250,11 @@ public class CardService {
         institutionCD = institutionCD.trim();
         
         LOGGER.log(Level.INFO, String.format("instititionCD: %s - deviceId: %s", institutionCD, deviceId));
-        
+        String custNum;
         try {
 
             System.out.print("Before customer repo");
-            CustomerDevice customerDevice = customerRepo.findCustomerDeviceAndInstitution(deviceId, institutionCD);
+            CustomerDevice customerDevice = customerRepo.findByCustomerDeviceAndInstitution(deviceId, institutionCD);
 
             if (customerDevice == null) {
                 return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer device does not exist");
@@ -262,21 +262,23 @@ public class CardService {
 
             Customer customer = customerDevice.getCustomer();
 
-            
-            if (customer == null){
+            if (customer == null) {
 
                 return new CardPanDetailsResponse(ResponseCode.ERROR, "Customer does not exist");
             }
 
-            String custNum = customer.getCustNo();
-
+            custNum = customer.getCustNo();
 
             LOGGER.log(Level.INFO, String.format("customer Number - %s", custNum));
-            
-            if (custNum.isEmpty()){
+
+            if (custNum.isEmpty()) {
                 return new CardPanDetailsResponse(ResponseCode.ERROR, "CustNo does not exist");
             }
-
+        }catch (Exception e){
+            LOGGER.log(Level.INFO, "Exception fetchimg customer details", e);
+            return new CardPanDetailsResponse(ResponseCode.ERROR, "Unable to process your request, try again.");
+        }
+        try {
             LOGGER.log(Level.INFO, "Before gatewaycall");
             String bankserviceResponseJSON = cardWS.getProvidusCards(custNum, institutionCD);
             LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));

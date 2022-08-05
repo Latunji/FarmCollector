@@ -18,6 +18,6 @@ public interface CustomerRepository {
     
 
     CustomerDevice findCustomerDeviceAndInstitution(String deviceId, String institutionCD);
-    Customer findByCustomerDeviceAndInstitution(String deviceId, String institutionCD);
+    CustomerDevice findByCustomerDeviceAndInstitution(String deviceId, String institutionCD);
    
 }

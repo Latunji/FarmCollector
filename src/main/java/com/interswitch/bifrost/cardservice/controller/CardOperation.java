@@ -105,27 +105,20 @@ public class CardOperation {
     @Encrypted(isOptional = true)
     @GetMapping("providusGetCards")
     public CompletableFuture<CardPanDetailsResponse> providusGetcards(@RequestParam("deviceId") String deviceId, @RequestParam("institutionCD") String institutionCD) {
-<<<<<<< HEAD
+
 
         CardPanDetailsResponse response = new CardPanDetailsResponse(10);
-=======
         LOGGER.log(Level.INFO, String.format("instititionCD: %s - deviceId: %s", institutionCD, deviceId));
-      CardPanDetailsResponse response = new CardPanDetailsResponse(10);
->>>>>>> 12c77594e87f0450f7282f6c1bd5a6bbea807c7d
+
         try {
             response = cardService.providusGetCards(deviceId, institutionCD);
-        }
-<<<<<<< HEAD
-        catch (Exception ex) {
-
+        } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("GET Tokenization EXCEPTION - %s, %s", institutionCD, deviceId), ex);
             response.setDescription("ERROR");
 
         }
         //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS_TOKEN FINAL RESPONSE", response.toString() ));
-=======
-        
->>>>>>> 12c77594e87f0450f7282f6c1bd5a6bbea807c7d
+
         return CompletableFuture.completedFuture(response);
     }
 
