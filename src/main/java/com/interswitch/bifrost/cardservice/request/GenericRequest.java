@@ -52,6 +52,9 @@ public class GenericRequest
     private String cardPin;
     @JsonProperty("branchCode")
     private String branchCode;
+    
+    private String hotlistReason;
+    
 
     public String getCardPin() {
         return cardPin;
@@ -153,6 +156,16 @@ public class GenericRequest
     public void setBranchCode(String branchCode) {
         this.branchCode = branchCode;
     }
+
+    public String getHotlistReason() {
+        return hotlistReason;
+    }
+
+    public void setHotlistReason(String hotlistReason) {
+        this.hotlistReason = hotlistReason;
+    }
+    
+    
     
     
 }

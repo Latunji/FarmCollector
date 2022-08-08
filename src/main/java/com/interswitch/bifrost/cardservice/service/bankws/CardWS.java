@@ -11,6 +11,7 @@ package com.interswitch.bifrost.cardservice.service.bankws;
  */
 public interface CardWS {
     public String getCards(String accountNumber, String custNo,String institutionCode) throws Exception ;
+    public String getProvidusCards(String custNo,String institutionCode) throws Exception ;
     public String hotlistCard(String accountNumber,String cardPan, String custNo,String institutionCode) throws Exception;
     public String replaceCard(String accountNumber,String cardPan,String custNo,String deliveryAddress,String deliveryType,String institutionCode) throws Exception;
     public String requestCard(String accountNumber,String cardType,String custNo,String nameOnCard,String institutionCode, String branchCode) throws Exception;

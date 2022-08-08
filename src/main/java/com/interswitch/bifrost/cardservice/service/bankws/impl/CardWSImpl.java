@@ -7,6 +7,7 @@ package com.interswitch.bifrost.cardservice.service.bankws.impl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.interswitch.bifrost.cardservice.request.ProvidusCardRequest;
 import com.interswitch.bifrost.cardservice.response.CustomerDetailsResponse;
 import com.interswitch.bifrost.cardservice.service.bankws.CardWS;
 import com.interswitch.bifrost.cardservice.service.bankws.request.CustDetailsRequest;
@@ -226,6 +227,64 @@ public class CardWSImpl implements CardWS {
 
     }
 
+    
+    @Override
+    public String getProvidusCards(String customerNo, String institutionCD) throws Exception {
+        LOGGER.log(Level.INFO, String.format("%s - %s ", "GET CARD-TOKEN INITIALIZED", configx.getBankBaseUrl(institutionCD)), configx.getBankGatewayUrl(institutionCD));
+        Response response;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            
+            String apiKey = configx.getAPIKey(institutionCD);
+            String authId = configx.getAuthID(institutionCD);
+            String appId = configx.getAppID(institutionCD);
+         
+            ProvidusCardRequest cred = new ProvidusCardRequest();
+            
+            cred.setApiKey(apiKey);
+            cred.setAuthId(authId);
+            cred.setAppId(appId);
+            cred.setInstitutionCD(institutionCD);
+            cred.setCustNo(customerNo);
+            cred.setClientUrl(configx.getBankBaseUrl(institutionCD));
+            
+            OkHttpClient client = new OkHttpClient();
+            MediaType mediaType = MediaType.parse("application/json");  
+            String ss = mapper.writeValueAsString(cred);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s", "Providus getCard request", ss));   
+//
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCD) + "providusGetCards").newBuilder();
+            
+            String url = urlBuilder.build().toString();
+            LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for bank ", configx.getBankBaseUrl(institutionCD) + "card"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCD) + "providusGetCards"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request url for get cards", url));
+
+            Request request = new Request.Builder()
+                   .url(url)
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+         
+            response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "Gateway2 response", responseBody));
+            return responseBody;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET Tokenization EXCEPTION", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+
+    }
+
+    
+    
     @Override
     public String hotlistCard(String accountNumber, String cardPan, String custNo, String institutionCD) throws Exception {
         try {

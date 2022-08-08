@@ -104,5 +104,52 @@ public class ConfigProperties {
         
         return value==null?"InterSwitch":value;
     }
-            
+         
+    public String getNameProvidus(String institutionCode)
+    {
+        String key = institutionCode+".nameProvidus";
+        LOGGER.info(String.format("%s - %s ", "GET application ID KEY", key));
+        String value = environment.getProperty(key);
+        LOGGER.info(String.format("%s - %s ", "GET application ID VALUE", value));
+        //int intValue = Integer.parseInt(value);
+        
+//        return value==null?"InterSwitch":value;
+        return value==null?"":value;
+    }
+    
+    
+    public String getClientIDProvidus(String institutionCode)
+    {
+        String key = institutionCode+".clientIDProvidus";
+        LOGGER.info(String.format("%s - %s ", "GET application ID KEY", key));
+        String value = environment.getProperty(key);
+        LOGGER.info(String.format("%s - %s ", "GET application ID VALUE", value));
+        //int intValue = Integer.parseInt(value);
+        
+        return value==null?"":value;
+    }
+    
+      public String getSecretKeyProvidus(String institutionCode)
+    {
+        String key = institutionCode+".secretKeyProvidus";
+        LOGGER.info(String.format("%s - %s ", "GET application ID KEY", key));
+        String value = environment.getProperty(key);
+        LOGGER.info(String.format("%s - %s ", "GET application ID VALUE", value));
+        //int intValue = Integer.parseInt(value);
+        
+        return value==null?"":value;
+    }
+    
+      
+      public String getIvProvidus(String institutionCode)
+    {
+        String key = institutionCode+".ivProvidus";
+        LOGGER.info(String.format("%s - %s ", "GET application ID KEY", key));
+        String value = environment.getProperty(key);
+        LOGGER.info(String.format("%s - %s ", "GET application ID VALUE", value));
+        //int intValue = Integer.parseInt(value);
+        
+        return value==null?"":value;
+    } 
+      
 }
