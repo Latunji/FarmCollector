@@ -1,5 +1,7 @@
 package com.interswitch.bifrost.cardservice;
 import java.util.concurrent.Executor;
+
+import com.interswitch.bifrost.commons.async.ContextAwarePoolExecutor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -37,7 +39,7 @@ public class CardServiceApplication extends CommonConfigurationAdapter{
     @Bean(name="threadPool")
     public Executor asyncExecutor()
     {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = new ContextAwarePoolExecutor();
         executor.setCorePoolSize(13);
         executor.setMaxPoolSize(13);
         executor.setQueueCapacity(500);
