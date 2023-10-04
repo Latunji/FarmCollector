@@ -11,10 +11,7 @@ import com.interswitch.bifrost.cardservice.response.CardPanDetailsResponse;
 import com.interswitch.bifrost.cardservice.service.CardService;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.interswitch.bifrost.cardservice.response.CardsResponse;
 import com.interswitch.bifrost.cardservice.vo.ResponseCode;
@@ -23,17 +20,13 @@ import com.interswitch.bifrost.commons.annotations.Secured;
 import com.interswitch.bifrost.commons.security.vo.AuthenticatedUser;
 import com.interswitch.bifrost.commons.security.vo.SessionDetail;
 import com.interswitch.bifrost.commons.security.vo.SessionDetailFactory;
-import java.security.PrivateKey;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -80,12 +73,11 @@ public class CardOperation {
     @Async("threadPool")
     @Encrypted(isOptional = true)
     @GetMapping("getCards")
-    public CompletableFuture<CardsResponse> getCardDetails(@RequestParam("accountNumber") String accountNumber, @RequestParam("custNo") String custNo) {
+    public CompletableFuture<CardsResponse> getCardDetails(@RequestParam("accountNumber") String accountNumber, @RequestParam("custNo") String custNo){
 
         SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
         AuthenticatedUser user = (AuthenticatedUser) sessionDetail.getPrincipal();
         LOGGER.info(String.format("%s - %s- %s, %s", "CARDS", user.getUserName(), user.getDeviceId(), ""));
-        //LOGGER.info(String.format("%s - %s, %s", "CARDS", "", ""));
         CardsResponse response = new CardsResponse(10);
         try {
             response = cardService.getMyCards(accountNumber, sessionDetail.getDeviceId(), custNo, sessionDetail.getInstitutionCD());
@@ -93,11 +85,8 @@ public class CardOperation {
         catch (Exception ex) {
             //log exception if occured
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET CARDS EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
-            //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS EXCEPTION", ""), ex);
             response.setDescription("ERROR");
-            //return response;
         }
-        // LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS FINAL RESPONSE", response.toString() ));
         return CompletableFuture.completedFuture(response);
     }
 
@@ -182,17 +171,33 @@ public class CardOperation {
         //LOGGER.info(String.format("%s - %s, %s", "HOTLIST CARDS", "", ""));
         ServiceResponse response = new ServiceResponse(10);
         try {
-            response = cardService.hotlistCards(payload.getAccountNumber(), payload.getCardPan(), user.getDeviceId(), sessionDetail.getInstitutionCD());
+            response = cardService.hotlistCards(payload, user.getDeviceId(), sessionDetail.getInstitutionCD());
         }
         catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "HOTLIST CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
-            //LOGGER.log(Level.SEVERE, String.format("%s - %s", "HOTLIST CARD EXCEPTION", ""), ex);
             response.setDescription("ERROR");
-            //return response;
         }
         return CompletableFuture.completedFuture(response);
     }
 
+    @Secured
+    @Async("threadPool")
+    @Encrypted(isOptional = true)
+    @PostMapping("block")
+    public CompletableFuture<ServiceResponse> blockCard(@RequestBody GenericRequest payload) {
+        SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
+        AuthenticatedUser user = (AuthenticatedUser) sessionDetail.getPrincipal();
+        LOGGER.info(String.format("%s - %s, %s", "BLOCK CARD", user.getUserName(), user.getDeviceId()));
+        ServiceResponse response = new ServiceResponse(10);
+        try {
+            response = cardService.blockCard(payload, user.getDeviceId(), sessionDetail.getInstitutionCD());
+        }
+        catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "BLOCK CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
+            response.setDescription("ERROR");
+        }
+        return CompletableFuture.completedFuture(response);
+    }
     @Secured
     @Async("threadPool")
     @Encrypted(isOptional = true)
@@ -204,8 +209,7 @@ public class CardOperation {
         //LOGGER.info(String.format("%s - %s, %s", "REQUEST CARDS", "", ""));
         ServiceResponse response = new ServiceResponse(10);
         try {
-            response = cardService.requestCard(payload.getAccountNumber(), user.getDeviceId(),
-                    payload.getCardType(), payload.getNameOnCard(), sessionDetail.getInstitutionCD(), payload.getBranchCode()); //.hotlistCards(payload.getAccountNumber(), payload.getCardPan(),payload.getCustNo());
+            response = cardService.requestCard(payload, user.getDeviceId(), sessionDetail.getInstitutionCD()); //.hotlistCards(payload.getAccountNumber(), payload.getCardPan(),payload.getCustNo());
         }
         catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "REQUEST CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
@@ -304,5 +308,28 @@ public class CardOperation {
         LOGGER.log(Level.SEVERE, String.format("%s - %s \n Key: %s", new Object[]{"GET TOKEN FINAL RESPONSE :", rspJson.toString(), this.tokenKey}));
         return CompletableFuture.completedFuture(rspJson.toString());
     }
+
+//    @Secured
+//    @Async("threadPool")
+//    @Encrypted(isOptional = true)
+//    @PostMapping("PtmfbRequestCard")
+//    public CompletableFuture<ServiceResponse> ptmfbRequestCard(@RequestBody GenericRequest payload) {
+//        SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
+//        AuthenticatedUser user = (AuthenticatedUser) sessionDetail.getPrincipal();
+//        LOGGER.info(String.format("%s - %s, %s", "PTMFB REQUEST CARDS", user.getUserName(), user.getDeviceId()));
+//        //LOGGER.info(String.format("%s - %s, %s", "REQUEST CARDS", "", ""));
+//        ServiceResponse response = new ServiceResponse(10);
+//        try {
+//            response = cardService.ptmfbRequestCard(payload.getAccountNumber(), user.getDeviceId(),
+//                    payload.getCardType(), payload.getNameOnCard(), sessionDetail.getInstitutionCD(), payload.getBin(), payload.getDeliveryOption()); //.hotlistCards(payload.getAccountNumber(), payload.getCardPan(),payload.getCustNo());
+//        }
+//        catch (Exception ex) {
+//            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "REQUEST CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
+//            //LOGGER.log(Level.SEVERE, String.format("%s - %s", "REQUEST CARD EXCEPTION", ""), ex);
+//            response.setDescription("ERROR");
+//
+//        }
+//        return CompletableFuture.completedFuture(response);
+//    }
 
 }

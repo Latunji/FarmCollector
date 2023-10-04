@@ -65,6 +65,14 @@ public class ConfigProperties {
         LOGGER.log(Level.INFO, String.format("key %s - value %s\n",key,value));
         return value;
     }
+
+    public String getBankCardBaseUrl(String institutionCode)
+    {
+        String key = institutionCode + ".bank.card.base-url";
+        String value = environment.getProperty(key);
+        LOGGER.log(Level.INFO, String.format("key %s - value %s\n",key,value));
+        return value;
+    }
     
     public String getVersionedUrl(String institutionCode)  
     {
@@ -104,7 +112,17 @@ public class ConfigProperties {
         
         return value==null?"InterSwitch":value;
     }
-         
+
+    public String getToken(String institutionCode)
+    {
+        String key = institutionCode+".cardApiToken";
+        LOGGER.info(String.format("%s - %s ", "GET Card API TOKEN KEY", key));
+        String value = environment.getProperty(key);
+        LOGGER.info(String.format("%s - %s ", "GET Card API TOKEN VALUE", value));
+
+        return value;
+    }
+
     public String getNameProvidus(String institutionCode)
     {
         String key = institutionCode+".nameProvidus";

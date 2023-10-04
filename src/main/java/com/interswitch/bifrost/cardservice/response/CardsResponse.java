@@ -5,6 +5,7 @@
  */
 package com.interswitch.bifrost.cardservice.response;
 
+import com.interswitch.bifrost.cardservice.service.vo.PtmfbCard;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
 //import com.interswitch.bifrost.cardservice.service.vo.Card;
 import com.interswitch.bifrost.cardservice.response.GetCardResponse.Cards;
@@ -24,6 +25,7 @@ public class CardsResponse extends ServiceResponse {
             
     transient SecurityCipher  cipher = new SecurityCipher();        
     private List<Cards> cards;
+    private List<PtmfbCard> card;
     public CardsResponse(int code) {
         super(code);
     }
@@ -56,6 +58,20 @@ public class CardsResponse extends ServiceResponse {
          this.cards =  Allcards;
          //this.cards = cards;
      }
+
+    public void setPtmfbMaskedCards(String  key,List<PtmfbCard> Allcards) throws Exception {
+        //cards = new ArrayList<Cards>();
+        for(PtmfbCard card : Allcards)
+        {
+//            card.setUnmaskedCardPan(key,card.getCardPAN());
+//            card.setUnmaskedCardPan(card.getUnmaskedCardPan());
+            //Added this to mask card pan
+            card.setCardPAN(maskNumber(card.getCardPAN()));
+
+        }
+        this.card =  Allcards;
+        //this.cards = cards;
+    }
      
      private String maskNumber(String number)
      {
