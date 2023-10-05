@@ -182,7 +182,7 @@ public class CardService {
             }
             String bankserviceResponseJSON = "";
 
-            if (institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getParamName()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getParamName())) {
+            if (institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())) {
                 bankserviceResponseJSON = cardWS.getPtmfbCards(accountNumber, custNum, institutionCD);
                 LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
                 // String bankserviceResponseJSON = backendWS.getAccounts(customer.getPrimaryAccountNumber());
@@ -511,7 +511,7 @@ public class CardService {
             response.setDescription("account number is blank");
             return response;
         }
-        if(institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getParamName()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getParamName())) {
+        if(institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())) {
             if(StringUtils.isBlank(payload.getSerialNo())){
                 response.setDescription("serial no is blank");
                 return response;
@@ -546,7 +546,7 @@ public class CardService {
                 return new CardsResponse(ResponseCode.ERROR, "INVALID CUSTOMER");
             }
 
-            if(institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getParamName()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getParamName())) {
+            if(institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())) {
 
                 bankserviceResponseJSON = cardWS.hotlistPtmfbCard(payload.getAccountNumber(), payload.getSerialNo(), payload.getReason(), generateReference(null), institutionCD);
 
@@ -682,7 +682,7 @@ public class CardService {
             return response;
         }
 
-        if(institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getParamName()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getParamName())){
+        if(institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())){
             if(StringUtils.isBlank(request.getBin())){
                 response.setDescription("card bin is blank");
             }
@@ -714,7 +714,7 @@ public class CardService {
                 return new CardsResponse(ResponseCode.ERROR, "INVALID CUSTOMER");
             }
 
-            if (institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getParamName()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getParamName())) {
+            if (institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())) {
                 bankserviceResponseJSON = cardWS.requestPtmfbCard(request.getAccountNumber(), request.getRequestType(), request.getCustNo(), request.getNameOnCard(), institutionCD, request.getBin(), request.getDeliveryOption());
 
                 CardResponse bankResp = gs.fromJson(bankserviceResponseJSON, CardResponse.class);
