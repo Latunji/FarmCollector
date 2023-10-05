@@ -308,28 +308,4 @@ public class CardOperation {
         LOGGER.log(Level.SEVERE, String.format("%s - %s \n Key: %s", new Object[]{"GET TOKEN FINAL RESPONSE :", rspJson.toString(), this.tokenKey}));
         return CompletableFuture.completedFuture(rspJson.toString());
     }
-
-//    @Secured
-//    @Async("threadPool")
-//    @Encrypted(isOptional = true)
-//    @PostMapping("PtmfbRequestCard")
-//    public CompletableFuture<ServiceResponse> ptmfbRequestCard(@RequestBody GenericRequest payload) {
-//        SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
-//        AuthenticatedUser user = (AuthenticatedUser) sessionDetail.getPrincipal();
-//        LOGGER.info(String.format("%s - %s, %s", "PTMFB REQUEST CARDS", user.getUserName(), user.getDeviceId()));
-//        //LOGGER.info(String.format("%s - %s, %s", "REQUEST CARDS", "", ""));
-//        ServiceResponse response = new ServiceResponse(10);
-//        try {
-//            response = cardService.ptmfbRequestCard(payload.getAccountNumber(), user.getDeviceId(),
-//                    payload.getCardType(), payload.getNameOnCard(), sessionDetail.getInstitutionCD(), payload.getBin(), payload.getDeliveryOption()); //.hotlistCards(payload.getAccountNumber(), payload.getCardPan(),payload.getCustNo());
-//        }
-//        catch (Exception ex) {
-//            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "REQUEST CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
-//            //LOGGER.log(Level.SEVERE, String.format("%s - %s", "REQUEST CARD EXCEPTION", ""), ex);
-//            response.setDescription("ERROR");
-//
-//        }
-//        return CompletableFuture.completedFuture(response);
-//    }
-
 }

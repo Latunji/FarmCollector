@@ -16,7 +16,7 @@ public enum TestInstitutionCode {
         private String paramName;
 
         TestInstitutionCode(String paramName) {
-                this.paramName = paramName;
+            this.paramName = paramName;
         }
 
 
