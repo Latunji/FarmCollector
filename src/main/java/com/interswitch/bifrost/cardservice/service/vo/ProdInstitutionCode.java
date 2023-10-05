@@ -14,9 +14,9 @@ public enum ProdInstitutionCode {
     AMJUU("058"),
     ISW("ISW");
 
-    private String paramName;
+    private String institutionCD;
 
-    ProdInstitutionCode(String paramName) {
-        this.paramName = paramName;
+    ProdInstitutionCode(String institutionCD) {
+        this.institutionCD = institutionCD;
     }
 }

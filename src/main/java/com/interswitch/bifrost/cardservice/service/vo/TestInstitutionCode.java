@@ -13,10 +13,10 @@ public enum TestInstitutionCode {
         NIRSAL("057"),
         AMJUU("055"),
         ISW("ISW");
-        private String paramName;
+        private String institutionCD;
 
-        TestInstitutionCode(String paramName) {
-            this.paramName = paramName;
+        TestInstitutionCode(String institutionCD) {
+            this.institutionCD = institutionCD;
         }
 
 
