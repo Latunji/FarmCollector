@@ -72,7 +72,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
-            <version>5.1.6.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>biz.paluch.redis</groupId>

@@ -11,6 +11,5 @@ public class PtmfbCard {
     private String linkedDate;
     private String serialNo;
     private String expiryDate;
-    private String cardType;
     private String nameOnCard;
 }

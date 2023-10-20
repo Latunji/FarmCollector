@@ -21,7 +21,10 @@ import com.interswitch.bifrost.cardservice.service.vo.TestInstitutionCode;
 import com.interswitch.bifrost.cardservice.util.ConfigProperties;
 import com.interswitch.bifrost.cardservice.util.SecurityCipher;
 import com.interswitch.bifrost.cardservice.vo.BaseResponse;
+import com.interswitch.bifrost.cardservice.vo.BlockCardResponse;
 import com.interswitch.bifrost.cardservice.vo.CardResponse;
+import com.interswitch.bifrost.cardservice.vo.HotlistResponse;
+import com.interswitch.bifrost.cardservice.vo.RequestCardResponse;
 import com.interswitch.bifrost.cardservice.vo.ResponseCode;
 import net.bytebuddy.pool.TypePool;
 import org.springframework.stereotype.Component;
@@ -82,30 +85,7 @@ public class CardService {
     @Value("${isw.token.issuer}")
     String tokenIssuerId;
 
-    //@Value("classpath:private.key")
-    //Resource resourceFile;
-//    public CustomerDetailsResponse validateCustomer(String deviceId,String institutionCD)
-//    {
-//        LOGGER.info(String.format(" %s- %s", "VALIDATE CUSTOMER",deviceId));
-//        CustomerDetailsResponse response = new CustomerDetailsResponse(ResponseCode.ERROR,"error in processing");
-//        if (StringUtils.isBlank(deviceId)) {
-//            response.setDescription("device is not valid ");
-//            return response;
-//        }
-//        try {
-//            
-//            String bankserviceResponseJSON = cardWS.validateCustomer(deviceId,institutionCD);                
-//            Gson gs = new Gson();
-//            
-//            response = gs.fromJson(bankserviceResponseJSON, CustomerDetailsResponse.class);
-//            
-//            
-//            return response;
-//        } catch (Exception ex) {
-//            LOGGER.info(String.format(" %s- %s", "VALIDATE CUSTOMER ERROR ",ex));
-//            return new CustomerDetailsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE );
-//        }
-//    }
+
     private ServiceResponse activateTransaction(String deviceId, String accountNumber, String institutionCD) {
         ServiceResponse response = new ServiceResponse(ResponseCode.ERROR, "error in processing");
         if (StringUtils.isBlank(deviceId)) {
@@ -193,15 +173,17 @@ public class CardService {
                 GetPtmfbCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetPtmfbCardResponse.class);
                 if (bankResp != null && bankResp.getCards() != null)
                 {
-                    response.setPtmfbMaskedCards(accountNumber, bankResp.getCards());
+                    response.setCards(bankResp.getCards());
                     response.setCode(0);
                     response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
                     LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response ", response.toString()));
                 }else if(bankResp != null && !bankResp.isSuccessful()) {
                     response.setDescription(bankResp.getResponseDescription());
+                    response.setCode(ResponseCode.ERROR);
                     LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response ", response.toString()));
                 }else{
                     response.setDescription(ResponseCode.GENERAL_ERROR_MESSAGE);
+                    response.setCode(ResponseCode.ERROR);
                 }
             }else{
                 bankserviceResponseJSON = cardWS.getCards(accountNumber, custNum, institutionCD);
@@ -215,7 +197,7 @@ public class CardService {
                 LOGGER.log(Level.INFO, String.format("%s - %s", " response ", bankResp));
                 if (bankResp != null || bankResp.getCards()  != null)
                 {
-                    response.setMaskedCards(accountNumber, bankResp.getCards());
+//                    response.setMaskedCards(accountNumber, bankResp.getCards());
                     response.setCode(0);
                     response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
                     LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", response.toString()));
@@ -449,60 +431,6 @@ public class CardService {
         return response;
     }
 
-    public CardsResponse getMaskedCards(String accountNumber, String deviceId, String custNo, String institutionCD) {
-
-        CardsResponse response = new CardsResponse(ResponseCode.ERROR, "No card available");
-        if (StringUtils.isBlank(deviceId)) {
-            response.setDescription("Invalid device");
-            return response;
-        }
-        if (StringUtils.isBlank(accountNumber)) {
-            response.setDescription("account number is blank");
-            return response;
-        }
-        if (StringUtils.isBlank(custNo)) {
-            response.setDescription("customer number is blank");
-            return response;
-        }
-        if (StringUtils.isBlank(institutionCD)) {
-            response.setDescription("institution code is blank");
-            return response;
-        }
-        try {
-            ServiceResponse resp = this.validateCustomerWithAccount(deviceId, accountNumber, institutionCD);
-            //String custNo;
-            if (resp != null) {
-                if (resp.getCode() != 0) {
-                    return new CardsResponse(ResponseCode.ERROR, "INVALID CUSTOMER");
-                }
-            } else {
-                return new CardsResponse(ResponseCode.ERROR_INTERNAL, "NO DATA FROM VALIDATION");
-            }
-
-            String bankserviceResponseJSON = cardWS.getCards(accountNumber, custNo, institutionCD);
-            Gson gs = new Gson();
-
-            GetCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetCardResponse.class);
-            if (bankResp != null && bankResp.getCards().size() > 0)//&& bankResp.length > 0) 
-            {
-
-                List<GetCardResponse.Cards> cards = maskCard(bankResp.getCards());
-
-                response.setCards(bankResp.getCards());
-
-                response.setCode(0);
-                response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
-                return response;
-            }
-            response.setDescription("NO VALUE OBTAINED");
-            return response;
-        }
-        catch (Exception ex) {
-            LOGGER.info(String.format(" %s- %s", "GET MASKED CARDS ERROR ", ex));
-            return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
-        }
-    }
-
     public ServiceResponse hotlistCards(GenericRequest payload, String deviceId, String institutionCD) {
 
         ServiceResponse response = new ServiceResponse(ResponseCode.ERROR, "No card available");
@@ -553,12 +481,12 @@ public class CardService {
                 // String bankserviceResponseJSON = backendWS.getAccounts(customer.getPrimaryAccountNumber());
                 Gson gs = new Gson();
 
-                CardResponse bankResp = gs.fromJson(bankserviceResponseJSON, CardResponse.class);
+                HotlistResponse bankResp = gs.fromJson(bankserviceResponseJSON, HotlistResponse.class);
 
-                if (bankResp != null && bankResp.isSuccessful()) {
+                if (bankResp != null && bankResp.isIsSuccessful()) {
                     response.setCode(ResponseCode.SUCCESS);
                     response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
-                } else if (bankResp != null && !bankResp.isSuccessful()) {
+                } else if (bankResp != null && !bankResp.isIsSuccessful()) {
                     response.setCode(ResponseCode.ERROR);
                     response.setDescription(bankResp.getResponseMessage());
                 } else {
@@ -623,12 +551,12 @@ public class CardService {
                 bankserviceResponseJSON = cardWS.blockandUnblockPtmfbCard(payload.getAccountNumber(), payload.getSerialNo(), payload.getReason(), generateReference(null), institutionCD, payload.getBlock());
                 Gson gs = new Gson();
 
-                CardResponse bankResp = gs.fromJson(bankserviceResponseJSON, CardResponse.class);
+                BlockCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, BlockCardResponse.class);
 
-                if (bankResp != null && bankResp.isSuccessful()) {
+                if (bankResp != null && bankResp.isIsSuccessful()) {
                     response.setCode(ResponseCode.SUCCESS);
                     response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
-                } else if (bankResp != null && !bankResp.isSuccessful()) {
+                } else if (bankResp != null && !bankResp.isIsSuccessful()) {
                     response.setCode(ResponseCode.ERROR);
                     response.setDescription(bankResp.getResponseMessage());
                 } else {
@@ -636,7 +564,7 @@ public class CardService {
                 }
         }
         catch (Exception ex) {
-            LOGGER.info(String.format(" %s- %s -%s", "HOTLIST CARDS ERROR ", ex, bankserviceResponseJSON));
+            LOGGER.info(String.format(" %s- %s -%s", "BLOCK/UNBLOCK CARD ERROR ", ex, bankserviceResponseJSON));
             return new CardsResponse(ResponseCode.ERROR, ex.getMessage());
         }
         return response;
@@ -717,11 +645,11 @@ public class CardService {
             if (institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())) {
                 bankserviceResponseJSON = cardWS.requestPtmfbCard(request.getAccountNumber(), request.getRequestType(), request.getCustNo(), request.getNameOnCard(), institutionCD, request.getBin(), request.getDeliveryOption());
 
-                CardResponse bankResp = gs.fromJson(bankserviceResponseJSON, CardResponse.class);
-                if (bankResp != null && bankResp.isSuccessful()) {
+                RequestCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, RequestCardResponse.class);
+                if (bankResp != null && bankResp.isIsSuccessful()) {
                     response.setCode(ResponseCode.SUCCESS);
-                    response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
-                } else if (bankResp != null && !bankResp.isSuccessful()) {
+                    response.setDescription(bankResp.getResponseMessage());
+                } else if (bankResp != null && !bankResp.isIsSuccessful()) {
                     response.setCode(ResponseCode.ERROR);
                     response.setDescription(bankResp.getResponseMessage());
                 } else {
