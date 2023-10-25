@@ -28,6 +28,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -320,8 +321,177 @@ public class CardWSImpl implements CardWS {
 
     }
 
-    
-    
+    @Override
+    public String viewProvidusCardStatus(String cardPan, String institutionCD) throws Exception {
+        LOGGER.log(Level.INFO, String.format("%s - %s ", "VIEW CARD-STATUS INITIALIZED",
+                configx.getBankBaseUrl(institutionCD)), configx.getBankCardBaseUrl(institutionCD));
+        Response response;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            String apiKey = configx.getAPIKey(institutionCD);
+            String authId = configx.getAuthID(institutionCD);
+            String appId = configx.getAppID(institutionCD);
+
+            ProvidusCardRequest cred = new ProvidusCardRequest();
+
+            cred.setApiKey(apiKey);
+            cred.setAuthId(authId);
+            cred.setAppId(appId);
+            cred.setInstitutionCD(institutionCD);
+
+            cred.setClientUrl(configx.getBankCardBaseUrl(institutionCD)+"status/pan/"+cardPan);
+
+            OkHttpClient client = new OkHttpClient();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(cred);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s", "Providus view Card request", ss));
+//
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCD) + "providus/viewCardStatus").newBuilder();
+
+            String url = urlBuilder.build().toString();
+            LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for bank ", cred.getClientUrl()));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCD) + "providus/viewCardStatus"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request url for view card status", url));
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "Gateway2 response", responseBody));
+            return responseBody;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "VIEW CARD STATUS EXCEPTION", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+
+    }
+
+    @Override
+    public String providusHotlistCard(String cardPan, String currency, String institutionCode) throws Exception {
+        LOGGER.log(Level.INFO, String.format("%s - %s ", "HOTLIST CARD INITIALIZED",
+                configx.getBankBaseUrl(institutionCode)), configx.getBankCardBaseUrl(institutionCode));
+        Response response;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            String apiKey = configx.getAPIKey(institutionCode);
+            String authId = configx.getAuthID(institutionCode);
+            String appId = configx.getAppID(institutionCode);
+            String clientUrl = configx.getBankCardBaseUrl(institutionCode)+"hotlistcard";
+
+            JSONObject cred = new JSONObject();
+            cred.put("apiKey", apiKey);
+            cred.put("authId", authId);
+            cred.put("appId",appId);
+            cred.put("institutionCode", institutionCode);
+            cred.put("pan", cardPan);
+            cred.put("currency", currency);
+            cred.put("clientUrl", clientUrl);
+
+
+            OkHttpClient client = new OkHttpClient();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(cred);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s", "Providus hotlist request", ss));
+//
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCode) + "providus/hotlistCard").newBuilder();
+
+            String url = urlBuilder.build().toString();
+            LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for bank ", clientUrl));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCode) + "providus/hotlistCard"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request url for hotlistCard", url));
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "Gateway2 response", responseBody));
+            return responseBody;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "HOTLIST CARD EXCEPTION", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+    }
+
+    @Override
+    public String providusDehotlistCard(String cardPan, String currency, String institutionCode) throws Exception {
+        LOGGER.log(Level.INFO, String.format("%s - %s ", "DEHOTLIST CARD INITIALIZED",
+                configx.getBankBaseUrl(institutionCode)), configx.getBankCardBaseUrl(institutionCode));
+        Response response;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            String apiKey = configx.getAPIKey(institutionCode);
+            String authId = configx.getAuthID(institutionCode);
+            String appId = configx.getAppID(institutionCode);
+            String clientUrl = configx.getBankCardBaseUrl(institutionCode)+"dehotlistcard";
+
+            JSONObject cred = new JSONObject();
+            cred.put("apiKey", apiKey);
+            cred.put("authId", authId);
+            cred.put("appId",appId);
+            cred.put("institutionCode", institutionCode);
+            cred.put("pan", cardPan);
+            cred.put("currency", currency);
+            cred.put("clientUrl", clientUrl);
+
+
+            OkHttpClient client = new OkHttpClient();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(cred);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s", "Providus dehotlist request", ss));
+//
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCode) + "providus/dehotlistCard").newBuilder();
+
+            String url = urlBuilder.build().toString();
+            LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for bank ", clientUrl));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCode) + "providus/dehotlistCard"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request url for dehotlistCard", url));
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "Gateway2 response", responseBody));
+            return responseBody;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "DEHOTLIST CARD EXCEPTION", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+    }
+
+
     @Override
     public String hotlistCard(String accountNumber, String cardPan, String custNo, String institutionCD) throws Exception {
         try {

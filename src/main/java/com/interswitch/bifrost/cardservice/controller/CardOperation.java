@@ -8,6 +8,8 @@ package com.interswitch.bifrost.cardservice.controller;
 //import com.interswitch.bifrost.cardservice.request.GetCardRequest;
 import com.interswitch.bifrost.cardservice.request.GenericRequest;
 import com.interswitch.bifrost.cardservice.response.CardPanDetailsResponse;
+import com.interswitch.bifrost.cardservice.response.GetTokenizationResponse;
+import com.interswitch.bifrost.cardservice.response.ViewCardStatusResponse;
 import com.interswitch.bifrost.cardservice.service.CardService;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
 import org.springframework.validation.annotation.Validated;
@@ -108,6 +110,65 @@ public class CardOperation {
         }
         //LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARDS_TOKEN FINAL RESPONSE", response.toString() ));
 
+        return CompletableFuture.completedFuture(response);
+    }
+    @Async("threadPool")
+    @Encrypted(isOptional = true)
+    @GetMapping("viewCardStatus")
+    public CompletableFuture<ViewCardStatusResponse> providusViewcards(@RequestParam("deviceId") String deviceId,
+                                                                       @RequestParam("institutionCD") String institutionCD,
+                                                                       @RequestParam("cardPan") String cardPan) {
+
+        ViewCardStatusResponse response = new ViewCardStatusResponse();
+        LOGGER.log(Level.INFO, String.format("institutionCD: %s - deviceId: %s", institutionCD, deviceId));
+        try {
+            response = cardService.providusViewCardStatus(cardPan, deviceId, institutionCD);
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("VIEW CARD STATUS EXCEPTION - %s, %s", institutionCD, deviceId), ex);
+            response.setDescription("ERROR");
+
+        }
+        return CompletableFuture.completedFuture(response);
+    }
+    @Async("threadPool")
+    @Encrypted(isOptional = true)
+    @GetMapping("providus/hotlistCard")
+    public CompletableFuture<GetTokenizationResponse> providusHotlistCard(@RequestParam("deviceId") String deviceId,
+                                                                          @RequestParam("institutionCD") String institutionCD,
+                                                                          @RequestParam("cardPan") String cardPan,
+                                                                          @RequestParam("currency") String currency) {
+
+        GetTokenizationResponse response = new GetTokenizationResponse();
+        LOGGER.log(Level.INFO, String.format("institutionCD: %s - deviceId: %s", institutionCD, deviceId));
+        try {
+            response = cardService.providusHotlistCard(cardPan, currency, deviceId, institutionCD);
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("HOTLIST CARD EXCEPTION - %s, %s", institutionCD, deviceId), ex);
+            response.setText("ERROR");
+
+        }
+        return CompletableFuture.completedFuture(response);
+    }
+    @Async("threadPool")
+    @Encrypted(isOptional = true)
+    @GetMapping("providus/dehotlistCard")
+    public CompletableFuture<GetTokenizationResponse> providusDeHotlistCard(@RequestParam("deviceId") String deviceId,
+                                                                          @RequestParam("institutionCD") String institutionCD,
+                                                                          @RequestParam("cardPan") String cardPan,
+                                                                          @RequestParam("currency") String currency) {
+
+        GetTokenizationResponse response = new GetTokenizationResponse();
+        LOGGER.log(Level.INFO, String.format("institutionCD: %s - deviceId: %s", institutionCD, deviceId));
+        try {
+            response = cardService.providusDeHotlistCard(cardPan, currency, deviceId, institutionCD);
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("DEHOTLIST CARD EXCEPTION - %s, %s", institutionCD, deviceId), ex);
+            response.setText("ERROR");
+
+        }
         return CompletableFuture.completedFuture(response);
     }
 

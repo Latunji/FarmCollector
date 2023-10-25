@@ -13,6 +13,9 @@ public interface CardWS {
     public String getCards(String accountNumber, String custNo,String institutionCode) throws Exception ;
     public String getPtmfbCards(String accountNumber, String custNo,String institutionCode) throws Exception ;
     public String getProvidusCards(String custNo,String institutionCode) throws Exception ;
+    public String viewProvidusCardStatus(String cardPan, String institutionCode) throws Exception;
+    public String providusHotlistCard(String cardPan, String currency, String institutionCode) throws Exception;
+    public String providusDehotlistCard(String cardPan, String currency, String institutionCode) throws Exception;
     public String hotlistCard(String accountNumber,String cardPan, String custNo,String institutionCode) throws Exception;
     public String hotlistPtmfbCard(String accountNumber, String serialNo, String reason, String reference, String institutionCD);
     public String blockandUnblockPtmfbCard(String accountNumber, String serialNo, String reason, String reference, String institutionCD, Boolean block);
