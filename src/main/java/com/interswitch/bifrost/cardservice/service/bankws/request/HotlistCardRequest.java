@@ -5,10 +5,15 @@
  */
 package com.interswitch.bifrost.cardservice.service.bankws.request;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  *
  * @author Ahmed.Oladele
  */
+@Getter
+@Setter
 public class HotlistCardRequest {
     
     private String custNo;  
@@ -17,80 +22,12 @@ public class HotlistCardRequest {
     private String clientUrl;
     private String reference;
     private String institutionCD;
+
+    private String currency;
     private String apiKey;
     private String authId;
     private String appId;
 
-    public String getInstitutionCD() {
-        return institutionCD;
-    }
 
-    public void setInstitutionCD(String institutionCD) {
-        this.institutionCD = institutionCD;
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
-
-    public String getAuthId() {
-        return authId;
-    }
-
-    public void setAuthId(String authId) {
-        this.authId = authId;
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
-    public String getClientUrl() {
-        return clientUrl;
-    }
-
-    public void setClientUrl(String clientUrl) {
-        this.clientUrl = clientUrl;
-    }
-    public String getCustNo() {
-        return custNo;
-    }
-
-    public void setCustNo(String custNo) {
-        this.custNo = custNo;
-    }
-    
-    public String getAccountNumber() {
-        return accountNumber;
-    }
-
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
-    }
-    public String getCardPan() {
-        return cardPan;
-    }
-
-    public void setCardPan(String cardPan) {
-        this.cardPan = cardPan;
-    } 
-
-    public String getReference() {
-        return reference;
-    }
-
-    public void setReference(String reference) {
-        this.reference = reference;
-    }
-    
-    
         
 }

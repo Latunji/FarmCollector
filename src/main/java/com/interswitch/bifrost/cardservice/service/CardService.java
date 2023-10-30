@@ -322,6 +322,274 @@ public class CardService {
             return new CardPanDetailsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
     }
+    public ViewCardStatusResponse providusViewCardStatus(String cardPan, String deviceId, String institutionCD) {
+        LOGGER.log(Level.INFO, "VIEW PROVIDUS CARDS STATUS INITIALIZED");
+
+        ViewCardStatusResponse response = new ViewCardStatusResponse(ResponseCode.ERROR, "No card available");
+        if (StringUtils.isBlank(deviceId)) {
+            response.setDescription("Invalid device");
+            return response;
+        }
+
+        if (StringUtils.isBlank(institutionCD)) {
+            response.setDescription("institution code is blank");
+            return response;
+        }
+
+        if (StringUtils.isBlank(cardPan)){
+            response.setDescription("Card pan cannot be blank");
+        }
+
+        String custNum;
+
+        deviceId = deviceId.trim();
+        institutionCD = institutionCD.trim();
+
+        LOGGER.log(Level.INFO, String.format("instititionCD: %s - deviceId: %s", institutionCD, deviceId));
+        try {
+
+            CustomerDevice customerDevice = customerRepo.findByCustomerDeviceAndInstitution(deviceId, institutionCD);
+
+            if (customerDevice == null) {
+                return new ViewCardStatusResponse(ResponseCode.ERROR, "Customer device does not exist");
+            }
+
+            Customer customer = customerDevice.getCustomer();
+
+            if (customer == null) {
+                return new ViewCardStatusResponse(ResponseCode.ERROR, "Customer does not exist");
+            }
+
+            custNum =  customer.getCustNo();
+
+        }catch (Exception e){
+            LOGGER.log(Level.INFO, "Exception fetching customer details", e);
+            return new ViewCardStatusResponse(ResponseCode.ERROR, "Unable to process your request, try again.");
+        }
+        try {
+            LOGGER.log(Level.INFO, "Before gatewaycall");
+            String bankserviceResponseJSON = cardWS.viewProvidusCardStatus(cardPan, institutionCD);
+            LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
+
+            Gson gs = new GsonBuilder()
+                    .excludeFieldsWithModifiers(Modifier.TRANSIENT)
+                    .create();
+
+            GetTokenizationResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetTokenizationResponse.class);
+            LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankResp));
+            LOGGER.log(Level.INFO, "gateway responsecode  -----------" + bankResp.getResponseCode());
+            if (bankResp != null && bankResp.getResponseCode().equalsIgnoreCase("0"))
+            {
+                LOGGER.log(Level.INFO, "gateway was successful");
+                String cipherText = bankResp.getText();
+                String mockCipherText = "ZzkfDVjhi392+Xk6tMNln6kNLg5nPkGkUQ1ICCjpagpzNB+e0nJde6z8sTN6W+4bTA5VseTcP04yeXkOOLS8vtmPuI+gf16Z2o6cQzCnWbIFr/nSV6yqMHn3IZAN++oeNkX3I4er2YrL0mu/91x6fAwgWEfVq7Vq6NqIdzlVZhYu7k2sqWxIZ1/J/kFBwyHwNc3OzzhH+3PzVA3pUO4WF9gKArf0knlMl1aYNViHYvCa/GL2DqZ3D5EVP3d4kxhsWbsL4hLOgyMxSK9m1gmuYkudCe54Hzd82cu/qpnox41vnvMhwUAHOYHJlQtwx9LnLtfGAxe6QItd5nvthmkJDWWLa+vH48FB0OqOU0/3xWs=";
+
+                if (custNum.equals("65347")) {
+                    cipherText = mockCipherText;
+                }
+                String algorithm = "AES/CBC/PKCS5Padding";
+                String secretKey = configx.getSecretKeyProvidus(institutionCD);
+                String iv = configx.getIvProvidus(institutionCD);
+
+                String cardDetails = decryptResponse(algorithm, cipherText, secretKey, iv);
+
+                ViewCardStatusResponse statusResponse = gs.fromJson(cardDetails, ViewCardStatusResponse.class);
+
+                response.setPan(statusResponse.getPan());
+                response.setCardStatus(statusResponse.getCardStatus());
+                response.setHoldResponseCode(statusResponse.getHoldResponseCode());
+                response.setExpiryDate(statusResponse.getExpiryDate());
+                response.setSequenceNumber(statusResponse.getSequenceNumber());
+                response.setCode(0);
+                response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
+
+                LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", response.toString()));
+                return response;
+            }
+            response.setDescription("NO VALUE OBTAINED");
+            response.setCode(10);
+            return response;
+        }
+        catch (Exception ex) {
+            LOGGER.log(Level.INFO, String.format(" %s- %s", "VIEW CARDS STATUS ERROR ", ex));
+            return new ViewCardStatusResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
+        }
+    }
+
+    public GetTokenizationResponse providusHotlistCard(String cardPan, String currency, String deviceId, String institutionCD) {
+        LOGGER.log(Level.INFO, "PROVIDUS HOTLIST CARDS INITIALIZED");
+
+        GetTokenizationResponse response = new GetTokenizationResponse();
+        if (StringUtils.isBlank(deviceId)) {
+            response.setText("Invalid device");
+            response.setResponseCode("10");
+            return response;
+        }
+
+        if (StringUtils.isBlank(institutionCD)) {
+            response.setText("institution code is blank");
+            response.setResponseCode("10");
+            return response;
+        }
+
+        if (StringUtils.isBlank(cardPan)){
+            response.setText("Card pan cannot be blank");
+            response.setResponseCode("10");
+        }
+        if (StringUtils.isBlank(currency)){
+            response.setText("Currency cannot be blank");
+            response.setResponseCode("10");
+        }
+
+        deviceId = deviceId.trim();
+        institutionCD = institutionCD.trim();
+
+        LOGGER.log(Level.INFO, String.format("institutionCD: %s - deviceId: %s", institutionCD, deviceId));
+        try {
+
+            CustomerDevice customerDevice = customerRepo.findByCustomerDeviceAndInstitution(deviceId, institutionCD);
+
+            if (customerDevice == null) {
+                response.setText("Customer device does not exist");
+                response.setResponseCode("10");
+                return response;
+            }
+
+            Customer customer = customerDevice.getCustomer();
+
+            if (customer == null) {
+                response.setText("Customer does not exist");
+                response.setResponseCode("10");
+                return response;
+            }
+
+        }catch (Exception e){
+            LOGGER.log(Level.INFO, "Exception fetching customer details", e);
+            response.setText("Customer does not exist");
+            response.setResponseCode("10");
+            return response;
+        }
+        try {
+            LOGGER.log(Level.INFO, "Before gatewaycall");
+            String bankserviceResponseJSON = cardWS.providusHotlistCard(cardPan, currency, institutionCD);
+            LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
+
+            Gson gs = new GsonBuilder()
+                    .excludeFieldsWithModifiers(Modifier.TRANSIENT)
+                    .create();
+
+            GetTokenizationResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetTokenizationResponse.class);
+            LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankResp));
+            LOGGER.log(Level.INFO, "gateway responsecode  -----------" + bankResp.getResponseCode());
+            if (bankResp != null && bankResp.getResponseCode().equalsIgnoreCase("0"))
+            {
+                LOGGER.log(Level.INFO, "gateway was successful");
+                response.setText(bankResp.getText());
+                response.setResponseCode("0");
+                LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", response.toString()));
+                return response;
+            }
+            response.setText("NO VALUE OBTAINED");
+            response.setResponseCode("10");
+            return response;
+        }
+        catch (Exception ex) {
+            LOGGER.log(Level.INFO, String.format(" %s- %s", "HOTLIST CARD ERROR ", ex));
+            response.setText(ResponseCode.GENERAL_ERROR_MESSAGE);
+            response.setResponseCode("10");
+        }
+
+        return response;
+    }
+
+    public GetTokenizationResponse providusDeHotlistCard(String cardPan, String currency, String deviceId, String institutionCD) {
+        LOGGER.log(Level.INFO, "PROVIDUS DEHOTLIST CARD INITIALIZED");
+
+        GetTokenizationResponse response = new GetTokenizationResponse();
+        if (StringUtils.isBlank(deviceId)) {
+            response.setText("Invalid device");
+            response.setResponseCode("10");
+            return response;
+        }
+
+        if (StringUtils.isBlank(institutionCD)) {
+            response.setText("institution code is blank");
+            response.setResponseCode("10");
+            return response;
+        }
+
+        if (StringUtils.isBlank(cardPan)){
+            response.setText("Card pan cannot be blank");
+            response.setResponseCode("10");
+        }
+        if (StringUtils.isBlank(currency)){
+            response.setText("Currency cannot be blank");
+            response.setResponseCode("10");
+        }
+
+        deviceId = deviceId.trim();
+        institutionCD = institutionCD.trim();
+
+        LOGGER.log(Level.INFO, String.format("institutionCD: %s - deviceId: %s", institutionCD, deviceId));
+        try {
+
+            CustomerDevice customerDevice = customerRepo.findByCustomerDeviceAndInstitution(deviceId, institutionCD);
+
+            if (customerDevice == null) {
+                response.setText("Customer device does not exist");
+                response.setResponseCode("10");
+                return response;
+            }
+
+            Customer customer = customerDevice.getCustomer();
+
+            if (customer == null) {
+                response.setText("Customer does not exist");
+                response.setResponseCode("10");
+                return response;
+            }
+
+        }catch (Exception e){
+            LOGGER.log(Level.INFO, "Exception fetching customer details", e);
+            response.setText("Customer does not exist");
+            response.setResponseCode("10");
+            return response;
+        }
+        try {
+            LOGGER.log(Level.INFO, "Before gatewaycall");
+            String bankserviceResponseJSON = cardWS.providusDehotlistCard(cardPan, currency, institutionCD);
+            LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
+
+            Gson gs = new GsonBuilder()
+                    .excludeFieldsWithModifiers(Modifier.TRANSIENT)
+                    .create();
+
+            GetTokenizationResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetTokenizationResponse.class);
+            LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankResp));
+            LOGGER.log(Level.INFO, "gateway responsecode  -----------" + bankResp.getResponseCode());
+            if (bankResp != null && bankResp.getResponseCode().equalsIgnoreCase("0"))
+            {
+                LOGGER.log(Level.INFO, "gateway was successful");
+                response.setText(bankResp.getText());
+                response.setResponseCode("0");
+                LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", response.toString()));
+                return response;
+            }
+            response.setText("NO VALUE OBTAINED");
+            response.setResponseCode("10");
+            return response;
+        }
+        catch (Exception ex) {
+            LOGGER.log(Level.INFO, String.format(" %s- %s", "DEHOTLIST CARD ERROR ", ex));
+            response.setText(ResponseCode.GENERAL_ERROR_MESSAGE);
+            response.setResponseCode("10");
+        }
+
+        return response;
+    }
+
+
+
 
     public ServiceResponse activateAccountWithCard(String accountNumber, String deviceId, String missingDigits, String custNo, String institutionCD) {
 
