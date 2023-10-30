@@ -5,17 +5,10 @@
  */
 package com.interswitch.bifrost.cardservice.service.bankws.impl;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.interswitch.bifrost.cardservice.request.ProvidusCardRequest;
-import com.interswitch.bifrost.cardservice.response.CustomerDetailsResponse;
 import com.interswitch.bifrost.cardservice.service.bankws.CardWS;
-import com.interswitch.bifrost.cardservice.service.bankws.request.CustDetailsRequest;
-import com.interswitch.bifrost.cardservice.service.bankws.request.GetQuickCustomerDetails;
-import com.interswitch.bifrost.cardservice.service.bankws.request.HotlistCardRequest;
-import com.interswitch.bifrost.cardservice.service.bankws.request.ReplaceCard;
-import com.interswitch.bifrost.cardservice.service.bankws.request.RequestCard;
-import com.interswitch.bifrost.cardservice.service.bankws.request.UnblockCardRequest;
+import com.interswitch.bifrost.cardservice.service.bankws.request.*;
 import com.interswitch.bifrost.cardservice.util.ConfigProperties;
 import com.interswitch.bifrost.commons.security.InterServiceSecurityUtil;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
@@ -25,9 +18,8 @@ import com.interswitch.bifrost.commons.vo.ServiceResponse;
 //import com.squareup.okhttp.RequestBody;
 //import com.squareup.okhttp.Response;
 //import okhttp3.HttpUrl;
-import java.io.IOException;
 //import com.vanso.proxy.commons.annotations.Mock;
-import java.security.SecureRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import okhttp3.HttpUrl;
@@ -36,6 +28,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -227,6 +220,51 @@ public class CardWSImpl implements CardWS {
 
     }
 
+    public String getPtmfbCards(String accountNumber, String customerNo, String institutionCD) {
+        LOGGER.log(Level.SEVERE, String.format("%s - %s ", "GET PTMFB CARD ", configx.getBankBaseUrl(institutionCD)), configx.getBankGatewayUrl(institutionCD));
+        try {
+            String token = configx.getToken(institutionCD);
+
+            PtmfbCardApiRequest acctReq = new PtmfbCardApiRequest();
+            ObjectMapper mapper = new ObjectMapper();
+
+            acctReq.setAccountNo(accountNumber);
+            acctReq.setClientUrl(configx.getBankCardBaseUrl(institutionCD)+"Cards/RetrieveCustomerCards");
+            acctReq.setCustomerID(customerNo);
+            acctReq.setToken(token);
+
+            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .build();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(acctReq);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCD) + "ptmfbGetCards"));
+
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Get PTMFB Cards Request", ss));
+            Request request = new Request.Builder()
+                    .url(configx.getVersionedUrl(institutionCD) + "ptmfbGetCards")
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            Response rsp = client.newCall(request).execute();
+            String rBody = rsp.body().string();
+            LOGGER.log(Level.INFO, String.format("\n %s - %s", "Bank response for PTMFB get card", rBody));
+            return rBody;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "GET CARD", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+    }
+
     
     @Override
     public String getProvidusCards(String customerNo, String institutionCD) throws Exception {
@@ -283,8 +321,177 @@ public class CardWSImpl implements CardWS {
 
     }
 
-    
-    
+    @Override
+    public String viewProvidusCardStatus(String cardPan, String institutionCD) throws Exception {
+        LOGGER.log(Level.INFO, String.format("%s - %s ", "VIEW CARD-STATUS INITIALIZED",
+                configx.getBankBaseUrl(institutionCD)), configx.getBankCardBaseUrl(institutionCD));
+        Response response;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            String apiKey = configx.getAPIKey(institutionCD);
+            String authId = configx.getAuthID(institutionCD);
+            String appId = configx.getAppID(institutionCD);
+
+            ProvidusCardRequest cred = new ProvidusCardRequest();
+
+            cred.setApiKey(apiKey);
+            cred.setAuthId(authId);
+            cred.setAppId(appId);
+            cred.setInstitutionCD(institutionCD);
+
+            cred.setClientUrl(configx.getBankCardBaseUrl(institutionCD)+"status/pan/"+cardPan);
+
+            OkHttpClient client = new OkHttpClient();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(cred);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s", "Providus view Card request", ss));
+//
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCD) + "providus/viewCardStatus").newBuilder();
+
+            String url = urlBuilder.build().toString();
+            LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for bank ", cred.getClientUrl()));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCD) + "providus/viewCardStatus"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request url for view card status", url));
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "Gateway2 response", responseBody));
+            return responseBody;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "VIEW CARD STATUS EXCEPTION", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+
+    }
+
+    @Override
+    public String providusHotlistCard(String cardPan, String currency, String institutionCode) throws Exception {
+        LOGGER.log(Level.INFO, String.format("%s - %s ", "HOTLIST CARD INITIALIZED",
+                configx.getBankBaseUrl(institutionCode)), configx.getBankCardBaseUrl(institutionCode));
+        Response response;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            String apiKey = configx.getAPIKey(institutionCode);
+            String authId = configx.getAuthID(institutionCode);
+            String appId = configx.getAppID(institutionCode);
+            String clientUrl = configx.getBankCardBaseUrl(institutionCode)+"hotlistcard";
+
+            JSONObject cred = new JSONObject();
+            cred.put("apiKey", apiKey);
+            cred.put("authId", authId);
+            cred.put("appId",appId);
+            cred.put("institutionCode", institutionCode);
+            cred.put("pan", cardPan);
+            cred.put("currency", currency);
+            cred.put("clientUrl", clientUrl);
+
+
+            OkHttpClient client = new OkHttpClient();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(cred);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s", "Providus hotlist request", ss));
+//
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCode) + "providus/hotlistCard").newBuilder();
+
+            String url = urlBuilder.build().toString();
+            LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for bank ", clientUrl));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCode) + "providus/hotlistCard"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request url for hotlistCard", url));
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "Gateway2 response", responseBody));
+            return responseBody;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "HOTLIST CARD EXCEPTION", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+    }
+
+    @Override
+    public String providusDehotlistCard(String cardPan, String currency, String institutionCode) throws Exception {
+        LOGGER.log(Level.INFO, String.format("%s - %s ", "DEHOTLIST CARD INITIALIZED",
+                configx.getBankBaseUrl(institutionCode)), configx.getBankCardBaseUrl(institutionCode));
+        Response response;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            String apiKey = configx.getAPIKey(institutionCode);
+            String authId = configx.getAuthID(institutionCode);
+            String appId = configx.getAppID(institutionCode);
+            String clientUrl = configx.getBankCardBaseUrl(institutionCode)+"dehotlistcard";
+
+            JSONObject cred = new JSONObject();
+            cred.put("apiKey", apiKey);
+            cred.put("authId", authId);
+            cred.put("appId",appId);
+            cred.put("institutionCode", institutionCode);
+            cred.put("pan", cardPan);
+            cred.put("currency", currency);
+            cred.put("clientUrl", clientUrl);
+
+
+            OkHttpClient client = new OkHttpClient();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(cred);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s", "Providus dehotlist request", ss));
+//
+            HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCode) + "providus/dehotlistCard").newBuilder();
+
+            String url = urlBuilder.build().toString();
+            LOGGER.log(Level.INFO, "REQUEST {0} : ", ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for bank ", clientUrl));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCode) + "providus/dehotlistCard"));
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request url for dehotlistCard", url));
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            LOGGER.log(Level.SEVERE, String.format("\n %s - %s", "Gateway2 response", responseBody));
+            return responseBody;
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "DEHOTLIST CARD EXCEPTION", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+    }
+
+
     @Override
     public String hotlistCard(String accountNumber, String cardPan, String custNo, String institutionCD) throws Exception {
         try {
@@ -435,8 +642,162 @@ public class CardWSImpl implements CardWS {
                     + "   \"responseCode\":10"
                     + "}";
         }
-
     }
+
+    @Override
+    public String requestPtmfbCard(String accountNumber, String requestType, String custNo, String nameOnCard, String institutionCD, String bin, String deliveryOption) throws Exception {
+        try {
+            String token = configx.getToken(institutionCD);
+
+            PtmfbCardApiRequest acctReq = new PtmfbCardApiRequest();
+            ObjectMapper mapper = new ObjectMapper();
+
+
+            acctReq.setCustNo(custNo);
+            acctReq.setAccountNumber(accountNumber);
+            acctReq.setRequestType(requestType);
+            acctReq.setNameOnCard(nameOnCard);
+            acctReq.setClientUrl(configx.getBankCardBaseUrl(institutionCD) + "Cards/RequestCard");
+            acctReq.setBin(bin);
+            acctReq.setDeliveryOption(deliveryOption);
+            acctReq.setIdentifier("REQ00904930");
+            acctReq.setToken(token);
+
+            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .build();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(acctReq);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCD) + "requestPtmfbCard"));
+
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Request for PTMFB request card", ss));
+            Request request = new Request.Builder()
+                    .url(configx.getVersionedUrl(institutionCD) + "requestPtmfbCard")
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            Response rsp = client.newCall(request).execute();
+            String rBody = rsp.body().string();
+            LOGGER.log(Level.INFO, String.format("\n %s - %s", "Bank response for PTMFB request card", rBody));
+            return rBody;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "REQUEST CARD", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+    }
+
+    @Override
+    public String hotlistPtmfbCard(String accountNumber, String serialNo, String reason, String reference, String institutionCD) {
+        try {
+
+            String token = configx.getToken(institutionCD);
+
+            PtmfbCardApiRequest acctReq = new PtmfbCardApiRequest();
+            ObjectMapper mapper = new ObjectMapper();
+
+            acctReq.setReason(reason);
+            acctReq.setAccountNumber(accountNumber);
+            acctReq.setSerialNo(serialNo);
+            acctReq.setReference(reference);
+            acctReq.setClientUrl(configx.getBankCardBaseUrl(institutionCD) + "Cards/HotlistCard");
+            acctReq.setToken(token);
+
+            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .build();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(acctReq);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", configx.getVersionedUrl(institutionCD) + "hotlistPtmfbCard"));
+
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Hotlist PTMFB Card Request", ss));
+            Request request = new Request.Builder()
+                    .url(configx.getVersionedUrl(institutionCD) + "hotlistPtmfbCard")
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            Response rsp = client.newCall(request).execute();
+            String rBody = rsp.body().string();
+            LOGGER.log(Level.INFO, String.format("\n %s - %s", "Bank response for PTMFB hotlist card", rBody));
+            return rBody;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "REQUEST CARD", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+    }
+
+    @Override
+    public String blockandUnblockPtmfbCard(String accountNumber, String serialNo, String reason, String reference, String institutionCD, Boolean block) {
+        try {
+            String token = configx.getToken(institutionCD);
+            String url;
+
+            PtmfbCardApiRequest acctReq = new PtmfbCardApiRequest();
+            ObjectMapper mapper = new ObjectMapper();
+
+            acctReq.setReason(reason);
+            acctReq.setAccountNumber(accountNumber);
+            acctReq.setSerialNo(serialNo);
+            acctReq.setReference(reference);
+            acctReq.setBlock(block);
+            if(block.equals(true)) {
+                acctReq.setClientUrl(configx.getBankCardBaseUrl(institutionCD) + "Cards/Freeze");
+            }else{
+                acctReq.setClientUrl(configx.getBankCardBaseUrl(institutionCD) + "Cards/UnFreeze");
+            }
+            acctReq.setToken(token);
+
+
+            url = configx.getVersionedUrl(institutionCD)+"blockAndUnblockCard";
+            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .build();
+            MediaType mediaType = MediaType.parse("application/json");
+            String ss = mapper.writeValueAsString(acctReq);
+            RequestBody body = RequestBody.create(mediaType, ss);
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "URL for gateway", url));
+
+            LOGGER.log(Level.INFO, String.format("%s - %s\n", "Block/Unblock PTMFB Card Request", ss));
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("key", "access token")
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            Response rsp = client.newCall(request).execute();
+            String rBody = rsp.body().string();
+            LOGGER.log(Level.INFO, String.format("\n %s - %s", "Bank response for PTMFB Block/Unblock card", rBody));
+            return rBody;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, String.format("%s - %s", "BLOCK/UNBLOCK CARD", ""), ex);
+            return "{\n"
+                    + "   \"responseTxt\":\"Error Occured\",\n"
+                    + "   \"responseCode\":10"
+                    + "}";
+        }
+    }
+
 
     public String getCustomerDetails(String cardPan, String cardPin, String institutionCD) throws Exception {
         RequestCard acctReq = new RequestCard();

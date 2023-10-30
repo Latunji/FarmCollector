@@ -9,6 +9,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
 
@@ -16,6 +19,8 @@ import java.math.BigDecimal;
  *
  * @author Ahmed.Oladele
  */
+@Getter
+@Setter
 @JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GenericRequest 
@@ -52,120 +57,27 @@ public class GenericRequest
     private String cardPin;
     @JsonProperty("branchCode")
     private String branchCode;
-    
+
+    @JsonProperty("deliveryOption")
+    private String deliveryOption;
+
+    @JsonProperty("bin")
+    private String bin;
+
+    @JsonProperty("identifier")
+    private String identifier;
+
+    @JsonProperty("requestType")
+    private String requestType;
+
     private String hotlistReason;
-    
 
-    public String getCardPin() {
-        return cardPin;
-    }
+    @JsonProperty("serialNo")
+    private String serialNo;
 
-    public void setCardPin(String cardPin) {
-        this.cardPin = cardPin;
-    }
+    @JsonProperty("reason")
+    private String reason;
 
-    public String getInstitutionCD() {
-        return institutionCD;
-    }
+    private Boolean block;
 
-    public void setInstitutionCD(String institutionCD) {
-        this.institutionCD = institutionCD;
-    }
-    
-    public String getCardPan() {
-        return cardPan;
-    }
-
-    public void setCardPan(String cardPan) {
-        this.cardPan = cardPan;
-    } 
-    
-    public String getCardType() {
-        return this.cardType;
-    } 
-    public void setCardType(String cardtype) {
-        this.cardType = cardtype;
-    } 
-    
-    public String getNameOnCard() {
-        return nameOnCard;
-    }
-
-    public void setNameOnCard(String nameOnCard) {
-        this.nameOnCard = nameOnCard;
-    } 
-    
-    public String getDeliveryType() {
-        return deliveryType;
-    }
-
-    public void setDeliveryType(String deliveryType) {
-        this.deliveryType = deliveryType;
-    } 
-    public String getDeliveryAddress() {
-        return deliveryAddress;
-    }
-
-    public void setDeliveryAddress(String deliveryAddress) {
-        this.deliveryAddress = deliveryAddress;
-    } 
-
-    public String getClientUrl() {
-        return clientUrl;
-    }
-
-    public void setClientUrl(String clientUrl) {
-        this.clientUrl = clientUrl;
-    }
-                
-    public String getCustNo() {
-        return custNo;
-    }
-
-    public void setCustNo(String custNo) {
-        this.custNo = custNo;
-    }
-
-    public String getAccountNumber() {
-        return accountNumber;
-    }
-
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
-    }
-
-    public String getMissingDigit() {
-        return missingDigit;
-    }
-
-    public void setMissingDigit(String missingDigit) {
-        this.missingDigit = missingDigit;
-    }
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-    }
-
-    public String getBranchCode() {
-        return branchCode;
-    }
-
-    public void setBranchCode(String branchCode) {
-        this.branchCode = branchCode;
-    }
-
-    public String getHotlistReason() {
-        return hotlistReason;
-    }
-
-    public void setHotlistReason(String hotlistReason) {
-        this.hotlistReason = hotlistReason;
-    }
-    
-    
-    
-    
 }
