@@ -9,6 +9,7 @@ package com.interswitch.bifrost.cardservice.controller;
 import com.interswitch.bifrost.cardservice.request.GenericRequest;
 import com.interswitch.bifrost.cardservice.response.CardPanDetailsResponse;
 import com.interswitch.bifrost.cardservice.response.GetTokenizationResponse;
+import com.interswitch.bifrost.cardservice.response.PtmfbCardsResponse;
 import com.interswitch.bifrost.cardservice.response.ViewCardStatusResponse;
 import com.interswitch.bifrost.cardservice.service.CardService;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
@@ -83,6 +84,28 @@ public class CardOperation {
         CardsResponse response = new CardsResponse(10);
         try {
             response = cardService.getMyCards(accountNumber, sessionDetail.getDeviceId(), custNo, sessionDetail.getInstitutionCD());
+        }
+        catch (Exception ex) {
+            //log exception if occured
+            LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET CARDS EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
+            response.setDescription("ERROR");
+        }
+        return CompletableFuture.completedFuture(response);
+    }
+
+
+    @Secured
+    @Async("threadPool")
+    @Encrypted(isOptional = true)
+    @GetMapping("ptmfbGetCards")
+    public CompletableFuture<PtmfbCardsResponse> ptmfbGetCardDetails(@RequestParam("accountNumber") String accountNumber, @RequestParam("custNo") String custNo){
+
+        SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
+        AuthenticatedUser user = (AuthenticatedUser) sessionDetail.getPrincipal();
+        LOGGER.info(String.format("%s - %s- %s, %s", "CARDS", user.getUserName(), user.getDeviceId(), ""));
+        PtmfbCardsResponse response = new PtmfbCardsResponse(10);
+        try {
+            response = cardService.ptmfbGetMyCards(accountNumber, sessionDetail.getDeviceId(), custNo, sessionDetail.getInstitutionCD());
         }
         catch (Exception ex) {
             //log exception if occured

@@ -10,8 +10,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.interswitch.bifrost.cardservice.exception.CustomException;
+import com.interswitch.bifrost.cardservice.model.CardAction;
+import com.interswitch.bifrost.cardservice.model.CardAudit;
 import com.interswitch.bifrost.cardservice.model.Customer;
 import com.interswitch.bifrost.cardservice.model.CustomerDevice;
+import com.interswitch.bifrost.cardservice.model.repo.CardRepository;
 import com.interswitch.bifrost.cardservice.model.repo.CustomerRepository;
 import com.interswitch.bifrost.cardservice.request.GenericRequest;
 import com.interswitch.bifrost.cardservice.response.*;
@@ -39,6 +42,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -67,6 +72,9 @@ public class CardService {
 
     @Autowired
     private CustomerRepository customerRepo;
+
+    @Autowired
+    CardRepository cardRepository;
 
     @Autowired
     CardWS cardWS;
@@ -162,7 +170,69 @@ public class CardService {
             }
             String bankserviceResponseJSON = "";
 
-            if (institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())) {
+                bankserviceResponseJSON = cardWS.getCards(accountNumber, custNum, institutionCD);
+                LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
+                // String bankserviceResponseJSON = backendWS.getAccounts(customer.getPrimaryAccountNumber());
+                Gson gs = new GsonBuilder()
+                        .excludeFieldsWithModifiers(Modifier.TRANSIENT)
+                        .create();
+
+                GetCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetCardResponse.class);
+                LOGGER.log(Level.INFO, String.format("%s - %s", " response ", bankResp));
+                if (bankResp != null || bankResp.getCards()  != null)
+                {
+                    response.setMaskedCards(accountNumber, bankResp.getCards());
+                    response.setCode(0);
+                    response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
+                    LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", response.toString()));
+                }
+                else{
+                    response.setDescription("No Cards Found");
+                }
+        }
+        catch (Exception ex) {
+            LOGGER.info(String.format(" %s- %s", "GET CARDS ERROR ", ex));
+            return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
+        }
+        return response;
+    }
+
+
+    public PtmfbCardsResponse ptmfbGetMyCards(String accountNumber, String deviceId, String custNum, String institutionCD) {
+
+        PtmfbCardsResponse response = new PtmfbCardsResponse(ResponseCode.ERROR, "No card available");
+        if (StringUtils.isBlank(deviceId)) {
+            response.setDescription("Invalid device");
+            return response;
+        }
+        if (StringUtils.isBlank(accountNumber)) {
+            response.setDescription("account number is blank");
+            return response;
+        }
+        if (StringUtils.isBlank(custNum)) {
+            response.setDescription("customer number is blank");
+            return response;
+        }
+        if (StringUtils.isBlank(institutionCD)) {
+            response.setDescription("institution code is blank");
+            return response;
+        }
+        try {
+            ServiceResponse resp = this.validateCustomerWithAccount(deviceId, accountNumber, institutionCD);
+            String custNo;
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+            if (resp != null) {
+                if (resp.getCode() != 0) {
+                    LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", resp.toString()));
+                    return new PtmfbCardsResponse(ResponseCode.ERROR, "ERROR VALIDATING CUSTOMER");
+                }
+            } else {
+                LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", resp.toString()));
+                return new PtmfbCardsResponse(ResponseCode.ERROR_INTERNAL, "NO DATA FROM VALIDATION");
+            }
+            String bankserviceResponseJSON = "";
+
                 bankserviceResponseJSON = cardWS.getPtmfbCards(accountNumber, custNum, institutionCD);
                 LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
                 // String bankserviceResponseJSON = backendWS.getAccounts(customer.getPrimaryAccountNumber());
@@ -185,31 +255,10 @@ public class CardService {
                     response.setDescription(ResponseCode.GENERAL_ERROR_MESSAGE);
                     response.setCode(ResponseCode.ERROR);
                 }
-            }else{
-                bankserviceResponseJSON = cardWS.getCards(accountNumber, custNum, institutionCD);
-                LOGGER.log(Level.INFO, String.format("%s - %s", " response from third party service ", bankserviceResponseJSON));
-                // String bankserviceResponseJSON = backendWS.getAccounts(customer.getPrimaryAccountNumber());
-                Gson gs = new GsonBuilder()
-                        .excludeFieldsWithModifiers(Modifier.TRANSIENT)
-                        .create();
-
-                GetCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, GetCardResponse.class);
-                LOGGER.log(Level.INFO, String.format("%s - %s", " response ", bankResp));
-                if (bankResp != null || bankResp.getCards()  != null)
-                {
-//                    response.setMaskedCards(accountNumber, bankResp.getCards());
-                    response.setCode(0);
-                    response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
-                    LOGGER.log(Level.SEVERE, String.format("%s - %s", "service response", response.toString()));
-                }
-                else{
-                    response.setDescription("No Cards Found");
-                }
-            }
         }
         catch (Exception ex) {
-            LOGGER.info(String.format(" %s- %s", "GET CARDS ERROR ", ex));
-            return new CardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
+            LOGGER.info(String.format(" %s- %s", "GET PTMFB CARDS ERROR ", ex));
+            return new PtmfbCardsResponse(ResponseCode.ERROR, ResponseCode.GENERAL_ERROR_MESSAGE);
         }
         return response;
     }
@@ -822,6 +871,18 @@ public class CardService {
                 BlockCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, BlockCardResponse.class);
 
                 if (bankResp != null && bankResp.isIsSuccessful()) {
+                    CardAudit cardAudit = new CardAudit();
+                    cardAudit.setReason(payload.getReason());
+                    cardAudit.setDate(new Date());
+                    if(payload.getBlock() == true){
+                        cardAudit.setAction(CardAction.BLOCK.getAction());
+                    }
+                    else{
+                        cardAudit.setAction(CardAction.UNBLOCK.getAction());
+                    }
+                    cardAudit.setAccountNumber(payload.getAccountNumber());
+                    cardRepository.save(cardAudit);
+
                     response.setCode(ResponseCode.SUCCESS);
                     response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
                 } else if (bankResp != null && !bankResp.isIsSuccessful()) {
@@ -915,6 +976,13 @@ public class CardService {
 
                 RequestCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, RequestCardResponse.class);
                 if (bankResp != null && bankResp.isIsSuccessful()) {
+                    CardAudit cardAudit = new CardAudit();
+                    cardAudit.setReason(request.getReason());
+                    cardAudit.setDate(new Date());
+                    cardAudit.setAction(CardAction.REQUEST.getAction());
+                    cardAudit.setAccountNumber(request.getAccountNumber());
+                    cardRepository.save(cardAudit);
+
                     response.setCode(ResponseCode.SUCCESS);
                     response.setDescription(bankResp.getResponseMessage());
                 } else if (bankResp != null && !bankResp.isIsSuccessful()) {
