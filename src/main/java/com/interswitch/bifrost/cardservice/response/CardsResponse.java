@@ -5,7 +5,6 @@
  */
 package com.interswitch.bifrost.cardservice.response;
 
-import com.interswitch.bifrost.cardservice.service.vo.PtmfbCard;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
 //import com.interswitch.bifrost.cardservice.service.vo.Card;
 import com.interswitch.bifrost.cardservice.response.GetCardResponse.Cards;
@@ -19,21 +18,8 @@ import com.interswitch.bifrost.cardservice.util.SecurityCipher;
  * @author chidiebere.onyeagba
  */
 public class CardsResponse extends ServiceResponse {
-    //private Card[] cards;
-    //@Autowired
-    //SecurityCipher cipher; //= 
             
-    transient SecurityCipher  cipher = new SecurityCipher();
-    private List<PtmfbCard> cards;
-
-    public List<PtmfbCard> getCards() {
-        return cards;
-    }
-
-    public void setCards(List<PtmfbCard> cards) {
-        this.cards = cards;
-    }
-
+    private List<Cards> cards;
     public CardsResponse(int code) {
         super(code);
     }
@@ -41,25 +27,25 @@ public class CardsResponse extends ServiceResponse {
     public CardsResponse(int code, String description) {
         super(code, description);
     }
-     
-//     public void setMaskedCards(String  key,List<Cards> Allcards) throws Exception {
-//         //cards = new ArrayList<Cards>();
-//         for(Cards card : Allcards)
-//         {
-//             //.Cards NewCard = new Cards();
-////
-//             //card.setUnmaskedCardPan(cipher.encrypt(key,card.getCardPan()));
-//             card.setUnmaskedCardPan(key,card.getCardPan());
-//             card.setUnmaskedCardPan(card.getUnmaskedCardPan());
-//             //Added this to mask card pan
-//             card.setCardPan(maskNumber(card.getCardPan()));
-//
-//         }
-//         this.cards =  Allcards;
-//         //this.cards = cards;
-//     }
 
+    public List<Cards> getCards() {
+         return cards;
+     }
 
+     public void setCards(List<Cards> cards) {
+         this.cards = cards;
+     }
+
+     public void setMaskedCards(String  key,List<Cards> Allcards) throws Exception {
+         for(Cards card : Allcards)
+         {
+             card.setUnmaskedCardPan(key,card.getCardPan());
+             card.setUnmaskedCardPan(card.getUnmaskedCardPan());
+             card.setCardPan(maskNumber(card.getCardPan()));
+
+         }
+         this.cards =  Allcards;
+     }
      
      private String maskNumber(String number)
      {
