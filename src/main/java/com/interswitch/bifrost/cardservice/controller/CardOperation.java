@@ -108,7 +108,6 @@ public class CardOperation {
             response = cardService.ptmfbGetMyCards(accountNumber, sessionDetail.getDeviceId(), custNo, sessionDetail.getInstitutionCD());
         }
         catch (Exception ex) {
-            //log exception if occured
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "GET CARDS EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
             response.setDescription("ERROR");
         }

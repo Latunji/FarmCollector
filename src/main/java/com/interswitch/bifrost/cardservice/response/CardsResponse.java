@@ -18,11 +18,7 @@ import com.interswitch.bifrost.cardservice.util.SecurityCipher;
  * @author chidiebere.onyeagba
  */
 public class CardsResponse extends ServiceResponse {
-    //private Card[] cards;
-    //@Autowired
-    //SecurityCipher cipher; //= 
             
-    transient SecurityCipher  cipher = new SecurityCipher();
     private List<Cards> cards;
     public CardsResponse(int code) {
         super(code);
@@ -41,20 +37,14 @@ public class CardsResponse extends ServiceResponse {
      }
 
      public void setMaskedCards(String  key,List<Cards> Allcards) throws Exception {
-         //cards = new ArrayList<Cards>();
          for(Cards card : Allcards)
          {
-             //.Cards NewCard = new Cards();
-//
-             //card.setUnmaskedCardPan(cipher.encrypt(key,card.getCardPan()));
              card.setUnmaskedCardPan(key,card.getCardPan());
              card.setUnmaskedCardPan(card.getUnmaskedCardPan());
-             //Added this to mask card pan
              card.setCardPan(maskNumber(card.getCardPan()));
 
          }
          this.cards =  Allcards;
-         //this.cards = cards;
      }
      
      private String maskNumber(String number)
@@ -68,32 +58,6 @@ public class CardsResponse extends ServiceResponse {
          
          return maskedNumber.toString();
          
-     }
-
-     static public void main(String[] args) throws Exception
-     {
-         List<Cards> allCards = new ArrayList<Cards>();
-
-         Cards card1 = new Cards();
-         card1.setCardPan("1234567890296459");
-        Cards card2 = new Cards();
-         card2.setCardPan("0987654321098765");
-
-         allCards.add(card1);
-         allCards.add(card2);
-
-         CardsResponse response = new CardsResponse(0);
-         response.setMaskedCards("ben", allCards);
-
-         response.printCardPan();
-     }
-
-     private void printCardPan()
-     {
-         for( Cards card: this.getCards())
-         {
-             System.out.printf("\n %s  %s",card.getCardPan(),card.getUnmaskedCardPan());
-         }
      }
 
 }
