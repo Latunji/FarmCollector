@@ -800,10 +800,10 @@ public class CardService {
 
                 HotlistResponse bankResp = gs.fromJson(bankserviceResponseJSON, HotlistResponse.class);
 
-                if (bankResp != null && bankResp.isIsSuccessful()) {
+                if (bankResp != null && bankResp.isSuccessful() == true) {
                     response.setCode(ResponseCode.SUCCESS);
                     response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
-                } else if (bankResp != null && !bankResp.isIsSuccessful()) {
+                } else if (bankResp != null && bankResp.isSuccessful() == false) {
                     response.setCode(ResponseCode.ERROR);
                     response.setDescription(bankResp.getResponseMessage());
                 } else {
@@ -870,7 +870,7 @@ public class CardService {
 
                 BlockCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, BlockCardResponse.class);
 
-                if (bankResp != null && bankResp.isIsSuccessful()) {
+                if (bankResp != null && bankResp.isSuccessful() == true) {
                     CardAudit cardAudit = new CardAudit();
                     cardAudit.setReason(payload.getReason());
                     cardAudit.setDate(new Date());
@@ -885,7 +885,7 @@ public class CardService {
 
                     response.setCode(ResponseCode.SUCCESS);
                     response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
-                } else if (bankResp != null && !bankResp.isIsSuccessful()) {
+                } else if (bankResp != null && bankResp.isSuccessful() == false) {
                     response.setCode(ResponseCode.ERROR);
                     response.setDescription(bankResp.getResponseMessage());
                 } else {
@@ -975,7 +975,7 @@ public class CardService {
                 bankserviceResponseJSON = cardWS.requestPtmfbCard(request.getAccountNumber(), request.getRequestType(), request.getCustNo(), request.getNameOnCard(), institutionCD, request.getBin(), request.getDeliveryOption());
 
                 RequestCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, RequestCardResponse.class);
-                if (bankResp != null && bankResp.isIsSuccessful()) {
+                if (bankResp != null && bankResp.isSuccessful() == true) {
                     CardAudit cardAudit = new CardAudit();
                     cardAudit.setReason(request.getReason());
                     cardAudit.setDate(new Date());
@@ -985,7 +985,7 @@ public class CardService {
 
                     response.setCode(ResponseCode.SUCCESS);
                     response.setDescription(bankResp.getResponseMessage());
-                } else if (bankResp != null && !bankResp.isIsSuccessful()) {
+                } else if (bankResp != null && bankResp.isSuccessful() == false) {
                     response.setCode(ResponseCode.ERROR);
                     response.setDescription(bankResp.getResponseMessage());
                 } else {
