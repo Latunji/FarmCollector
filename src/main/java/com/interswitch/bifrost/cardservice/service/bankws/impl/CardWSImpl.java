@@ -5,6 +5,8 @@
  */
 package com.interswitch.bifrost.cardservice.service.bankws.impl;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.interswitch.bifrost.cardservice.request.ProvidusCardRequest;
 import com.interswitch.bifrost.cardservice.service.bankws.CardWS;
@@ -390,14 +392,14 @@ public class CardWSImpl implements CardWS {
             String appId = configx.getAppID(institutionCode);
             String clientUrl = configx.getBankCardBaseUrl(institutionCode)+"hotlistcard";
 
-            JSONObject cred = new JSONObject();
-            cred.put("apiKey", apiKey);
-            cred.put("authId", authId);
-            cred.put("appId",appId);
-            cred.put("institutionCode", institutionCode);
-            cred.put("pan", cardPan);
-            cred.put("currency", currency);
-            cred.put("clientUrl", clientUrl);
+            HotlistCardRequest cred = new HotlistCardRequest();
+            cred.setApiKey(apiKey);
+            cred.setAppId(appId);
+            cred.setAuthId(authId);
+            cred.setInstitutionCD(institutionCode);
+            cred.setCardPan(cardPan);
+            cred.setCurrency(currency);
+            cred.setClientUrl(clientUrl);
 
 
             OkHttpClient client = new OkHttpClient();
@@ -405,7 +407,7 @@ public class CardWSImpl implements CardWS {
             String ss = mapper.writeValueAsString(cred);
             RequestBody body = RequestBody.create(mediaType, ss);
             LOGGER.log(Level.INFO, String.format("%s - %s", "Providus hotlist request", ss));
-//
+
             HttpUrl.Builder urlBuilder = HttpUrl.parse(configx.getVersionedUrl(institutionCode) + "providus/hotlistCard").newBuilder();
 
             String url = urlBuilder.build().toString();
@@ -447,14 +449,14 @@ public class CardWSImpl implements CardWS {
             String appId = configx.getAppID(institutionCode);
             String clientUrl = configx.getBankCardBaseUrl(institutionCode)+"dehotlistcard";
 
-            JSONObject cred = new JSONObject();
-            cred.put("apiKey", apiKey);
-            cred.put("authId", authId);
-            cred.put("appId",appId);
-            cred.put("institutionCode", institutionCode);
-            cred.put("pan", cardPan);
-            cred.put("currency", currency);
-            cred.put("clientUrl", clientUrl);
+            HotlistCardRequest cred = new HotlistCardRequest();
+            cred.setApiKey(apiKey);
+            cred.setAuthId(authId);
+            cred.setAppId(appId);
+            cred.setInstitutionCD(institutionCode);
+            cred.setCardPan(cardPan);
+            cred.setCurrency(currency);
+            cred.setClientUrl(clientUrl);
 
 
             OkHttpClient client = new OkHttpClient();
