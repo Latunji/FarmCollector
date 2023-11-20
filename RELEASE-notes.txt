@@ -1,0 +1,96 @@
+2023-11-21
+----------------------------------------------------------------------------------------------
+- Renamed id columns in db
+
+Code changes:
+@Column(name = "customerID") should be added on customer entity id field
+@JoinColumn(name = "customer_id", referencedColumnName = "customerID") should be added on entities which are using customer entity
+
+Database changes:
+Customers.id column renamed to Customers.customerID:
+
+exec sp_rename 'Customers.id', customerID, 'COLUMN'
+go
+
+stored procedures changes:
+
+ALTER PROCEDURE findCustomerByUsernameAndID @userName varchar(255), @insCode varchar(255), @id int
+AS
+SELECT * FROM Customers WITH(NOLOCK)
+INNER JOIN Institution WITH(NOLOCK) ON Customers.institution_id = Institution.id
+WHERE Customers.userName = @userName AND Institution.CODE = @insCode AND Customers.customerID <> @id;
+go
+
+
+ALTER PROCEDURE [dbo].[findAirtimeBeneficiariesByCustomerAndBillerCodeAB] @customerId bigint, @billerCode varchar(255), @type int
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT * FROM BillsPaymentBeneficiaries WITH(NOLOCK) INNER JOIN Customers WITH(NOLOCK) ON BillsPaymentBeneficiaries.customer_id = Customers.customerID WHERE BillsPaymentBeneficiaries.customer_id = @customerId AND BillsPaymentBeneficiaries.billerCode = @billerCode AND BillsPaymentBeneficiaries.type = @type
+END
+go
+
+
+ALTER PROCEDURE [dbo].[findBillsPaymentBeneficiaryByCategoryId] @customerId bigint, @type int, @categoryId varchar(255)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT * FROM BillsPaymentBeneficiaries WITH(NOLOCK) INNER JOIN Customers ON BillsPaymentBeneficiaries.customer_id = Customers.customerID WHERE BillsPaymentBeneficiaries.customer_id = @customerId AND BillsPaymentBeneficiaries.type = @type AND BillsPaymentBeneficiaries.categoryId = @categoryId
+END
+go
+
+ALTER PROCEDURE [dbo].[findBillsPaymentBeneficiaryByCustomer] @customerId bigint, @type int
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT * FROM BillsPaymentBeneficiaries WITH(NOLOCK) INNER JOIN Customers WITH(NOLOCK) ON BillsPaymentBeneficiaries.customer_id = Customers.customerID WHERE BillsPaymentBeneficiaries.customer_id = @customerId AND BillsPaymentBeneficiaries.type = @type
+END
+go
+
+ALTER PROCEDURE [dbo].[findBillsPaymentBeneficiaryByCustomerAndReferenceNumber] @customerId bigint, @type int, @billerCode varchar(255), @referenceNumber varchar(255)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT * FROM BillsPaymentBeneficiaries WITH(NOLOCK) INNER JOIN Customers WITH(NOLOCK) ON BillsPaymentBeneficiaries.customer_id = Customers.customerID WHERE BillsPaymentBeneficiaries.customer_id = @customerId AND BillsPaymentBeneficiaries.type = @type AND BillsPaymentBeneficiaries.billerCode = @billerCode AND BillsPaymentBeneficiaries.referenceNumber = @referenceNumber
+END
+go
+
+ALTER PROCEDURE [dbo].[findBillsPaymentBeneficiaryByReferenceAndCategoryId] @customerId bigint, @referenceNumber varchar(255), @categoryId varchar(255)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT * FROM BillsPaymentBeneficiaries WITH(NOLOCK) INNER JOIN Customers WITH(NOLOCK) ON BillsPaymentBeneficiaries.customer_id = Customers.customerID WHERE BillsPaymentBeneficiaries.customer_id = @customerId AND BillsPaymentBeneficiaries.referenceNumber = @referenceNumber AND BillsPaymentBeneficiaries.categoryId = @categoryId
+END
+go
+
+ALTER PROCEDURE [dbo].[findDataBeneficiaryByCategoryIdAndType] @customerId bigint, @referenceNumber varchar(255), @categoryId varchar(255), @type int
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT * FROM BillsPaymentBeneficiaries WITH(NOLOCK) INNER JOIN Customers WITH(NOLOCK) ON BillsPaymentBeneficiaries.customer_id = Customers.customerID WHERE customer_id = @customerId AND referenceNumber = @referenceNumber AND categoryId = @categoryId AND type = @type
+END
+go
+
+ALTER PROCEDURE findCustomerDeviceByDeviceIdAndInstitutionCode @deviceId varchar(255), @insCode varchar(255)
+AS
+SELECT * FROM CustomerDevices WITH(NOLOCK)
+INNER JOIN Customers WITH(NOLOCK) ON CustomerDevices.customer_id = Customers.customerID
+INNER JOIN Institution WITH(NOLOCK) ON Customers.institution_id = Institution.id
+WHERE CustomerDevices.uniqueId = @deviceId AND Institution.CODE = @insCode;
+go
+
+ALTER PROCEDURE findCustomerDeviceByIdAndInstitutionCode @id bigint, @insCode varchar(255)
+AS
+SELECT * FROM CustomerDevices WITH(NOLOCK)
+INNER JOIN Customers WITH(NOLOCK) ON CustomerDevices.customer_id = Customers.customerID
+INNER JOIN Institution WITH(NOLOCK) ON Customers.institution_id = Institution.id
+WHERE CustomerDevices.id = @id AND Institution.CODE = @insCode;
+go
+
+ALTER PROCEDURE [dbo].[findSessionByCustomerAndDateRange] @customer_id bigint, @startDate datetime2(7), @endDate datetime2(7)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT * FROM Sessions WITH(NOLOCK) INNER JOIN Customers WITH(NOLOCK) ON Sessions.customer_id = Customers.customerID WHERE Sessions.customer_id = @customer_id AND Sessions.startDate = @startDate AND Sessions.endDate = @endDate
+END
+go
