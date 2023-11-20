@@ -390,7 +390,7 @@ public class CardWSImpl implements CardWS {
             String apiKey = configx.getAPIKey(institutionCode);
             String authId = configx.getAuthID(institutionCode);
             String appId = configx.getAppID(institutionCode);
-            String clientUrl = configx.getBankCardBaseUrl(institutionCode);
+            String clientUrl = configx.getBankCardBaseUrl(institutionCode)+"hotlistcard";
 
             HotlistCardRequest cred = new HotlistCardRequest();
             cred.setApiKey(apiKey);
@@ -447,7 +447,7 @@ public class CardWSImpl implements CardWS {
             String apiKey = configx.getAPIKey(institutionCode);
             String authId = configx.getAuthID(institutionCode);
             String appId = configx.getAppID(institutionCode);
-            String clientUrl = configx.getBankCardBaseUrl(institutionCode);
+            String clientUrl = configx.getBankCardBaseUrl(institutionCode)+"dehotlistcard";
 
             HotlistCardRequest cred = new HotlistCardRequest();
             cred.setApiKey(apiKey);
