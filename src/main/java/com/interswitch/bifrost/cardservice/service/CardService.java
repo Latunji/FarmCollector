@@ -505,6 +505,7 @@ public class CardService {
             }
 
             Customer customer = customerDevice.getCustomer();
+            
 
             if (customer == null) {
                 response.setText("Customer does not exist");
