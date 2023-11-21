@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 public class GetPtmfbCardResponse {
 
-    private boolean successful;
+    private boolean isSuccessful;
     private String responseDescription;
     private List<PtmfbCard> cards;
 
