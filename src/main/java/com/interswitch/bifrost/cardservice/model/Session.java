@@ -1,5 +1,8 @@
 package com.interswitch.bifrost.cardservice.model;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,10 +24,6 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "Sessions")
-@NamedQueries({
-    @NamedQuery(name = "Session.findByCustomer", query = "SELECT s FROM Session s WHERE s.customer = :customer"),
-    @NamedQuery(name = "Session.findByCustomerAndDateRange", query = "SELECT s FROM Session s WHERE s.customer = :customer AND (s.startDate BETWEEN :startDt and :endDt)")
-})
 public class Session implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,6 +36,10 @@ public class Session implements Serializable {
     @Embedded
     private Device originatingDevice;
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "longitude", column = @Column(name = "sessionLongitude")),
+            @AttributeOverride(name = "latitude", column = @Column(name = "sessionLatitude"))
+    })
     private Location location;
 
     public Long getId() {

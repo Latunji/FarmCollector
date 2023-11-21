@@ -1,6 +1,6 @@
 2023-11-21
 ----------------------------------------------------------------------------------------------
-- Renamed id columns in db
+- Renamed columns in db
 
 Customers.id column renamed to Customers.customerID
 Customers.uniqueId column renamed to Customers.regDeviceUniqueId
@@ -8,6 +8,9 @@ Customers.model column renamed to Customers.regDeviceModel
 Customers.deviceName column renamed to Customers.regDeviceName
 CustomerDevices.id column renamed to CustomerDevices.customerDeviceID
 CustomerDevices.dateRegistered column renamed to CustomerDevices.registerDate
+Session.longitude column renamed to Session.sessionLongitude
+Session.latitude column renamed to Session.sessionLatitude
+
 
 Code changes:
 @Column(name = "customerID")  <-- should be added on customer entity id field
@@ -22,6 +25,10 @@ Code changes:
 @Column(name = "customerDeviceID")  <-- should be added on CustomerDevice entity id field
 @JoinColumn(name = "customerDeviceId", referencedColumnName = "customerDeviceID")  <--  should be added on entities which are using CustomerDevice entity
 
+@AttributeOverrides({
+            @AttributeOverride(name = "longitude", column = @Column(name = "sessionLongitude")),
+            @AttributeOverride(name = "latitude", column = @Column(name = "sessionLatitude"))
+    })    <--- should be added on Location field in Session entity
 
 Database changes:
 exec sp_rename 'Customers.id', customerID, 'COLUMN'
@@ -40,6 +47,12 @@ exec sp_rename 'CustomerDevices.id', customerDeviceID, 'COLUMN'
 go
 
 exec sp_rename 'CustomerDevices.dateRegistered', registerDate, 'COLUMN'
+go
+
+exec sp_rename 'Session.longitude', sessionLongitude, 'COLUMN'
+go
+
+exec sp_rename 'Session.latitude', sessionLatitude, 'COLUMN'
 go
 
 stored procedures changes:
