@@ -6,6 +6,8 @@ Customers.id column renamed to Customers.customerID
 Customers.uniqueId column renamed to Customers.regDeviceUniqueId
 Customers.model column renamed to Customers.regDeviceModel
 Customers.deviceName column renamed to Customers.regDeviceName
+CustomerDevices.id column renamed to CustomerDevices.customerDeviceID
+CustomerDevices.dateRegistered column renamed to CustomerDevices.registerDate
 
 Code changes:
 @Column(name = "customerID")  <-- should be added on customer entity id field
@@ -16,6 +18,10 @@ Code changes:
             @AttributeOverride(name = "model", column = @Column(name = "regDeviceModel")),
             @AttributeOverride(name = "deviceName", column = @Column(name = "regDeviceName"))
     })         <--- should be added on Device field in Customer entity
+
+@Column(name = "customerDeviceID")  <-- should be added on CustomerDevice entity id field
+@JoinColumn(name = "customerDeviceId", referencedColumnName = "customerDeviceID")  <--  should be added on entities which are using CustomerDevice entity
+
 
 Database changes:
 exec sp_rename 'Customers.id', customerID, 'COLUMN'
@@ -28,6 +34,12 @@ exec sp_rename 'Customers.model', regDeviceModel, 'COLUMN'
 go
 
 exec sp_rename 'Customers.deviceName', regDeviceName, 'COLUMN'
+go
+
+exec sp_rename 'CustomerDevices.id', customerDeviceID, 'COLUMN'
+go
+
+exec sp_rename 'CustomerDevices.dateRegistered', registerDate, 'COLUMN'
 go
 
 stored procedures changes:
@@ -60,7 +72,6 @@ BEGIN
 	SELECT * FROM Customers WITH(NOLOCK) WHERE regDeviceUniqueId = @deviceId
 END
 go
-
 
 ALTER PROCEDURE [dbo].[findAirtimeBeneficiariesByCustomerAndBillerCodeAB] @customerId bigint, @billerCode varchar(255), @type int
 AS
@@ -124,7 +135,7 @@ AS
 SELECT * FROM CustomerDevices WITH(NOLOCK)
 INNER JOIN Customers WITH(NOLOCK) ON CustomerDevices.customer_id = Customers.customerID
 INNER JOIN Institution WITH(NOLOCK) ON Customers.institution_id = Institution.id
-WHERE CustomerDevices.id = @id AND Institution.CODE = @insCode;
+WHERE CustomerDevices.customerDeviceID = @id AND Institution.CODE = @insCode;
 go
 
 ALTER PROCEDURE [dbo].[findSessionByCustomerAndDateRange] @customer_id bigint, @startDate datetime2(7), @endDate datetime2(7)

@@ -1,8 +1,6 @@
-/*
- * Holds mapping of customer to its registered devices.
- */
 package com.interswitch.bifrost.cardservice.model;
 
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,6 +17,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
+ * Holds mapping of customer to its registered devices.
  *
  * @author Oladele.Olaore
  */
@@ -36,8 +35,10 @@ import java.util.Date;
 public class CustomerDevice implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "customerDeviceID")
     private Long id;
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "registerDate")
     private Date dateRegistered;
     @ManyToOne
     @JoinColumn(name = "customer_id", referencedColumnName = "customerID")
