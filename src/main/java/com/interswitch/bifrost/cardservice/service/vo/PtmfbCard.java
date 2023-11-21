@@ -6,10 +6,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PtmfbCard {
-    private String cardPAN;
-    private String accountNumber;
-    private String linkedDate;
-    private String serialNo;
-    private String expiryDate;
-    private String nameOnCard;
+    private String CardPAN;
+    private String AccountNumber;
+    private String LinkedDate;
+    private String SerialNo;
+    private String ExpiryDate;
+    private String NameOnCard;
+    private String Status;
 }
