@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BlockCardResponse {
-    private boolean isSuccessful;
+    private boolean IsSuccessful;
     private String responseMessage;
 }
