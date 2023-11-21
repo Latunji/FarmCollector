@@ -2,14 +2,32 @@
 ----------------------------------------------------------------------------------------------
 - Renamed id columns in db
 
+Customers.id column renamed to Customers.customerID
+Customers.uniqueId column renamed to Customers.regDeviceUniqueId
+Customers.model column renamed to Customers.regDeviceModel
+Customers.deviceName column renamed to Customers.regDeviceName
+
 Code changes:
-@Column(name = "customerID") should be added on customer entity id field
-@JoinColumn(name = "customer_id", referencedColumnName = "customerID") should be added on entities which are using customer entity
+@Column(name = "customerID")  <-- should be added on customer entity id field
+@JoinColumn(name = "customer_id", referencedColumnName = "customerID")  <--  should be added on entities which are using customer entity
+
+@AttributeOverrides({
+            @AttributeOverride(name = "uniqueId", column = @Column(name = "regDeviceUniqueId")),
+            @AttributeOverride(name = "model", column = @Column(name = "regDeviceModel")),
+            @AttributeOverride(name = "deviceName", column = @Column(name = "regDeviceName"))
+    })         <--- should be added on Device field in Customer entity
 
 Database changes:
-Customers.id column renamed to Customers.customerID:
-
 exec sp_rename 'Customers.id', customerID, 'COLUMN'
+go
+
+exec sp_rename 'Customers.uniqueId', regDeviceUniqueId, 'COLUMN'
+go
+
+exec sp_rename 'Customers.model', regDeviceModel, 'COLUMN'
+go
+
+exec sp_rename 'Customers.deviceName', regDeviceName, 'COLUMN'
 go
 
 stored procedures changes:
@@ -19,6 +37,28 @@ AS
 SELECT * FROM Customers WITH(NOLOCK)
 INNER JOIN Institution WITH(NOLOCK) ON Customers.institution_id = Institution.id
 WHERE Customers.userName = @userName AND Institution.CODE = @insCode AND Customers.customerID <> @id;
+go
+
+ALTER PROCEDURE findCustomerByDeviceIdAndInsCode @deviceId varchar(255), @insCode varchar(255)
+AS
+SELECT * FROM Customers WITH(NOLOCK)
+INNER JOIN Institution WITH(NOLOCK) ON Customers.institution_id = Institution.id
+WHERE Customers.regDeviceUniqueId = @deviceId AND Institution.CODE = @insCode;
+go
+
+ALTER PROCEDURE findCustomerByLatestDeviceIdAndInsCode @deviceId varchar(255), @insCode varchar(255)
+AS
+SELECT * FROM Customers WITH(NOLOCK)
+INNER JOIN Institution WITH(NOLOCK) ON Customers.institution_id = Institution.id
+WHERE Customers.regDeviceUniqueId = @deviceId AND Institution.CODE = @insCode ORDER BY dateRegistered DESC;
+go
+
+ALTER PROCEDURE [dbo].[findCustomerByRegDeviceId] @deviceId varchar(255)
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SELECT * FROM Customers WITH(NOLOCK) WHERE regDeviceUniqueId = @deviceId
+END
 go
 
 
