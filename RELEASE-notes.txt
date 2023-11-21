@@ -10,6 +10,8 @@ CustomerDevices.id column renamed to CustomerDevices.customerDeviceID
 CustomerDevices.dateRegistered column renamed to CustomerDevices.registerDate
 Session.longitude column renamed to Session.sessionLongitude
 Session.latitude column renamed to Session.sessionLatitude
+BillsPaymentBeneficiaries.imageString column renamed to BillsPaymentBeneficiaries.beneficiaryImageString
+BillsPaymentBeneficiaries.imageType column renamed to BillsPaymentBeneficiaries.beneficiaryImageType
 
 
 Code changes:
@@ -23,12 +25,16 @@ Code changes:
     })         <--- should be added on Device field in Customer entity
 
 @Column(name = "customerDeviceID")  <-- should be added on CustomerDevice entity id field
+@Column(name = "registerDate")  <-- should be added on CustomerDevice entity dateRegistered field
 @JoinColumn(name = "customerDeviceId", referencedColumnName = "customerDeviceID")  <--  should be added on entities which are using CustomerDevice entity
 
 @AttributeOverrides({
             @AttributeOverride(name = "longitude", column = @Column(name = "sessionLongitude")),
             @AttributeOverride(name = "latitude", column = @Column(name = "sessionLatitude"))
     })    <--- should be added on Location field in Session entity
+
+@Column(name = "beneficiaryImageType")
+@Column(name = "beneficiaryImageString")
 
 Database changes:
 exec sp_rename 'Customers.id', customerID, 'COLUMN'
@@ -53,6 +59,12 @@ exec sp_rename 'Session.longitude', sessionLongitude, 'COLUMN'
 go
 
 exec sp_rename 'Session.latitude', sessionLatitude, 'COLUMN'
+go
+
+exec sp_rename 'BillsPaymentBeneficiaries.imageString', beneficiaryImageString, 'COLUMN'
+go
+
+exec sp_rename 'BillsPaymentBeneficiaries.imageType', beneficiaryImageType, 'COLUMN'
 go
 
 stored procedures changes:
