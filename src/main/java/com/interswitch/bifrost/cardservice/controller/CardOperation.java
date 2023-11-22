@@ -37,7 +37,6 @@ import org.springframework.scheduling.annotation.Async;
  */
 @RestController
 @Validated
-@RequestMapping("card")
 public class CardOperation {
 
     private static final Logger LOGGER = Logger.getLogger(CardOperation.class.getName());
