@@ -937,7 +937,7 @@ public class CardService {
         }
 
         if(institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())){
-            if(StringUtils.isBlank(request.getBin()) || request.getBin() == null){
+            if(StringUtils.isBlank(request.getBin())){
                 bin = configx.getCardBin(institutionCD);
             }
             if(StringUtils.isBlank(request.getDeliveryOption())){
