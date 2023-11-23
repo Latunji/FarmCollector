@@ -340,8 +340,8 @@ public class CardWSImpl implements CardWS {
             cred.setApiKey(apiKey);
             cred.setAppId(appId);
             cred.setAuthId(authId);
-            cred.setInstitutionCD(institutionCode);
-            cred.setCardPan(cardPan);
+            cred.setInstitutionCode(institutionCode);
+            cred.setPan(cardPan);
             cred.setCurrency(currency);
             cred.setClientUrl(clientUrl);
 
@@ -395,8 +395,8 @@ public class CardWSImpl implements CardWS {
             cred.setApiKey(apiKey);
             cred.setAuthId(authId);
             cred.setAppId(appId);
-            cred.setInstitutionCD(institutionCode);
-            cred.setCardPan(cardPan);
+            cred.setInstitutionCode(institutionCode);
+            cred.setPan(cardPan);
             cred.setCurrency(currency);
             cred.setClientUrl(clientUrl);
 
@@ -448,7 +448,7 @@ public class CardWSImpl implements CardWS {
             acctReq.setAppId(appId);
             acctReq.setCustNo(custNo);
             acctReq.setAccountNumber(accountNumber);
-            acctReq.setCardPan(cardPan);
+            acctReq.setPan(cardPan);
             acctReq.setClientUrl(configx.getBankBaseUrl(institutionCD) + "card/hotlist");
 
             OkHttpClient client = new OkHttpClient();

@@ -74,7 +74,7 @@ public class CardService {
     private CustomerRepository customerRepo;
 
     @Autowired
-    CardRepository cardRepository;
+    private CardRepository cardRepository;
 
     @Autowired
     CardWS cardWS;
