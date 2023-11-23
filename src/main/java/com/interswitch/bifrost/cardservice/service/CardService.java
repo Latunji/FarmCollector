@@ -920,7 +920,7 @@ public class CardService {
         return response;
     }
 
-    public ServiceResponse requestCard(GenericRequest request, String deviceId, String institutionCD, AuthenticatedUser user) {
+    public ServiceResponse requestCard(GenericRequest request, String deviceId, String institutionCD) {
         ServiceResponse response = new ServiceResponse(ResponseCode.ERROR, "No card available");
         String bin = StringUtils.EMPTY;
         if (StringUtils.isBlank(request.getAccountNumber())) {
