@@ -291,7 +291,7 @@ public class CardOperation {
         //LOGGER.info(String.format("%s - %s, %s", "REQUEST CARDS", "", ""));
         ServiceResponse response = new ServiceResponse(10);
         try {
-            response = cardService.requestCard(payload, user.getDeviceId(), sessionDetail.getInstitutionCD()); //.hotlistCards(payload.getAccountNumber(), payload.getCardPan(),payload.getCustNo());
+            response = cardService.requestCard(payload, user.getDeviceId(), sessionDetail.getInstitutionCD(), user); //.hotlistCards(payload.getAccountNumber(), payload.getCardPan(),payload.getCustNo());
         }
         catch (Exception ex) {
             LOGGER.log(Level.SEVERE, String.format("%s - %s - %s", "REQUEST CARD EXCEPTION", user.getUserName(), user.getDeviceId()), ex);
