@@ -1,5 +1,10 @@
 package com.interswitch.bifrost.cardservice.model;
 
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -11,10 +16,9 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.Date;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -40,8 +44,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class Customer implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "customerID")
     private Long id;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date dateRegistered, dateCreated;
     private String fullname;
     @Column(unique=true)
@@ -57,6 +62,11 @@ public class Customer implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date lastLoginTime;
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "uniqueId", column = @Column(name = "regDeviceUniqueId")),
+            @AttributeOverride(name = "model", column = @Column(name = "regDeviceModel")),
+            @AttributeOverride(name = "deviceName", column = @Column(name = "regDeviceName"))
+    })
     private Device regDevice; // uuid of the device the customer's registered with
     @Embedded
     private Location regInitiateLocation;
