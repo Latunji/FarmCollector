@@ -75,7 +75,7 @@ public class CardService {
     private CustomerRepository customerRepo;
 
     @Autowired
-    CardRepository cardRepository;
+    private CardRepository cardRepository;
 
     @Autowired
     CardWS cardWS;
@@ -506,6 +506,7 @@ public class CardService {
             }
 
             Customer customer = customerDevice.getCustomer();
+            
 
             if (customer == null) {
                 response.setText("Customer does not exist");

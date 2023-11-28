@@ -17,11 +17,11 @@ import lombok.Setter;
 public class HotlistCardRequest {
     
     private String custNo;  
-    private String cardPan;
+    private String pan;
     private String accountNumber; 
     private String clientUrl;
     private String reference;
-    private String institutionCD;
+    private String institutionCode;
 
     private String currency;
     private String apiKey;
