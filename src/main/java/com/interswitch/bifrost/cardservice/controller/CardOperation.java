@@ -115,6 +115,7 @@ public class CardOperation {
     }
 
     @Async("threadPool")
+    @Secured(optional = true)
     @Encrypted(isOptional = true)
     @GetMapping("providusGetCards")
     public CompletableFuture<CardPanDetailsResponse> providusGetcards(@RequestParam("deviceId") String deviceId, @RequestParam("institutionCD") String institutionCD) {
@@ -135,6 +136,7 @@ public class CardOperation {
         return CompletableFuture.completedFuture(response);
     }
     @Async("threadPool")
+    @Secured(optional = true)
     @Encrypted(isOptional = true)
     @GetMapping("viewCardStatus")
     public CompletableFuture<ViewCardStatusResponse> providusViewcards(@RequestParam("deviceId") String deviceId,
@@ -153,16 +155,21 @@ public class CardOperation {
         }
         return CompletableFuture.completedFuture(response);
     }
+    @Secured
     @Async("threadPool")
     @Encrypted(isOptional = true)
     @GetMapping("providus/hotlistCard")
-    public CompletableFuture<GetTokenizationResponse> providusHotlistCard(@RequestParam("deviceId") String deviceId,
-                                                                          @RequestParam("institutionCD") String institutionCD,
+    public CompletableFuture<GetTokenizationResponse> providusHotlistCard(@RequestParam("institutionCD") String institutionCD,
                                                                           @RequestParam("cardPan") String cardPan,
                                                                           @RequestParam("currency") String currency) {
 
+        SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
+        AuthenticatedUser user = sessionDetail.getPrincipal();
+
+        String deviceId = sessionDetail.getDeviceId();
+
         GetTokenizationResponse response = new GetTokenizationResponse();
-        LOGGER.log(Level.INFO, String.format("institutionCD: %s - deviceId: %s", institutionCD, deviceId));
+        LOGGER.log(Level.INFO, String.format("username: %s, institutionCD: %s - deviceId: %s", user.getUserName(),institutionCD, deviceId));
         try {
             response = cardService.providusHotlistCard(cardPan, currency, deviceId, institutionCD);
 
@@ -174,13 +181,14 @@ public class CardOperation {
         return CompletableFuture.completedFuture(response);
     }
     @Async("threadPool")
+    @Secured
     @Encrypted(isOptional = true)
     @GetMapping("providus/dehotlistCard")
-    public CompletableFuture<GetTokenizationResponse> providusDeHotlistCard(@RequestParam("deviceId") String deviceId,
-                                                                          @RequestParam("institutionCD") String institutionCD,
+    public CompletableFuture<GetTokenizationResponse> providusDeHotlistCard(@RequestParam("institutionCD") String institutionCD,
                                                                           @RequestParam("cardPan") String cardPan,
                                                                           @RequestParam("currency") String currency) {
-
+        SessionDetail sessionDetail = sessionDetailFactory.getSessionDetail();
+        String deviceId = sessionDetail.getDeviceId();
         GetTokenizationResponse response = new GetTokenizationResponse();
         LOGGER.log(Level.INFO, String.format("institutionCD: %s - deviceId: %s", institutionCD, deviceId));
         try {

@@ -236,7 +236,7 @@ public class CardWSImpl implements CardWS {
             cred.setAppId(appId);
             cred.setInstitutionCD(institutionCD);
             cred.setCustNo(customerNo);
-            cred.setClientUrl(configx.getBankBaseUrl(institutionCD));
+            cred.setClientUrl(configx.getBankCardBaseUrl(institutionCD));
 
             OkHttpClient client = new OkHttpClient();
             MediaType mediaType = MediaType.parse("application/json");
