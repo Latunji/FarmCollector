@@ -120,6 +120,14 @@ public class ConfigProperties {
         return value == null ? "" : value;
     }
 
+    public String getCardBin(String institutionCode){
+        String key = institutionCode + ".cardBin";
+        LOGGER.info(String.format("%s - %s ", "GET Card Bin KEY", key));
+        String value = environment.getProperty(key);
+        LOGGER.info(String.format("%s - %s ", "GET Card Bin VALUR", value));
+        return value == null ? "" : value;
+    }
+
 
     public String getClientIDProvidus(String institutionCode) {
         String key = institutionCode + ".clientIDProvidus";

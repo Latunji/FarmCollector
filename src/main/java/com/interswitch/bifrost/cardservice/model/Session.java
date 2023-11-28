@@ -1,17 +1,22 @@
 package com.interswitch.bifrost.cardservice.model;
 
-import java.io.Serializable;
-import java.util.Date;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  *
@@ -19,21 +24,22 @@ import javax.persistence.Temporal;
  */
 @Entity
 @Table(name = "Sessions")
-@NamedQueries({
-    @NamedQuery(name = "Session.findByCustomer", query = "SELECT s FROM Session s WHERE s.customer = :customer"),
-    @NamedQuery(name = "Session.findByCustomerAndDateRange", query = "SELECT s FROM Session s WHERE s.customer = :customer AND (s.startDate BETWEEN :startDt and :endDt)")
-})
 public class Session implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
+    @JoinColumn(name = "customer_id", referencedColumnName = "customerID")
     private Customer customer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date startDate, endDate;
     @Embedded
     private Device originatingDevice;
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "longitude", column = @Column(name = "sessionLongitude")),
+            @AttributeOverride(name = "latitude", column = @Column(name = "sessionLatitude"))
+    })
     private Location location;
 
     public Long getId() {

@@ -29,6 +29,7 @@ import com.interswitch.bifrost.cardservice.vo.CardResponse;
 import com.interswitch.bifrost.cardservice.vo.HotlistResponse;
 import com.interswitch.bifrost.cardservice.vo.RequestCardResponse;
 import com.interswitch.bifrost.cardservice.vo.ResponseCode;
+import com.interswitch.bifrost.commons.security.vo.AuthenticatedUser;
 import net.bytebuddy.pool.TypePool;
 import org.springframework.stereotype.Component;
 import com.interswitch.bifrost.commons.vo.ServiceResponse;
@@ -871,7 +872,7 @@ public class CardService {
 
                 BlockCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, BlockCardResponse.class);
 
-                if (bankResp != null && bankResp.isIsSuccessful() == true) {
+                if (bankResp != null && bankResp.isSuccessful() == true) {
                     CardAudit cardAudit = new CardAudit();
                     cardAudit.setReason(payload.getReason());
                     cardAudit.setDate(new Date());
@@ -886,7 +887,7 @@ public class CardService {
 
                     response.setCode(ResponseCode.SUCCESS);
                     response.setDescription(ResponseCode.GENERAL_SUCCESS_MESSAGE);
-                } else if (bankResp != null && bankResp.isIsSuccessful() == false) {
+                } else if (bankResp != null && bankResp.isSuccessful() == false) {
                     response.setCode(ResponseCode.ERROR);
                     response.setDescription(bankResp.getResponseMessage());
                 } else {
@@ -922,13 +923,9 @@ public class CardService {
 
     public ServiceResponse requestCard(GenericRequest request, String deviceId, String institutionCD) {
         ServiceResponse response = new ServiceResponse(ResponseCode.ERROR, "No card available");
-
+        String bin = StringUtils.EMPTY;
         if (StringUtils.isBlank(request.getAccountNumber())) {
             response.setDescription("account number is blank");
-            return response;
-        }
-        if (StringUtils.isBlank(request.getNameOnCard())) {
-            response.setDescription("name on card is blank");
             return response;
         }
         if (StringUtils.isBlank(deviceId)) {
@@ -942,7 +939,7 @@ public class CardService {
 
         if(institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())){
             if(StringUtils.isBlank(request.getBin())){
-                response.setDescription("card bin is blank");
+                bin = configx.getCardBin(institutionCD);
             }
             if(StringUtils.isBlank(request.getDeliveryOption())){
                 response.setDescription("delivery option is blank");
@@ -959,8 +956,12 @@ public class CardService {
                 response.setDescription("Please provide a branch code");
                 return response;
             }
+            if (StringUtils.isBlank(request.getNameOnCard())) {
+                response.setDescription("name on card is blank");
+                return response;
+            }
         }
-        String bankserviceResponseJSON = "";
+        String bankserviceResponseJSON = StringUtils.EMPTY;
         Gson gs = new Gson();
 
         try {
@@ -972,8 +973,18 @@ public class CardService {
                 return new CardsResponse(ResponseCode.ERROR, "INVALID CUSTOMER");
             }
 
+            CustomerDevice customerDevice = customerRepo.findByCustomerDeviceAndInstitution(deviceId, institutionCD);
+            if (customerDevice == null) {
+                return new CardsResponse(ResponseCode.ERROR, "Customer device does not exist");
+            }
+
+            Customer customer = customerDevice.getCustomer();
+            if (customer == null) {
+                return new CardsResponse(ResponseCode.ERROR, "Customer does not exist");
+            }
+
             if (institutionCD.equalsIgnoreCase(TestInstitutionCode.PTMFB.getInstitutionCD()) || institutionCD.equalsIgnoreCase(ProdInstitutionCode.PTMFB.getInstitutionCD())) {
-                bankserviceResponseJSON = cardWS.requestPtmfbCard(request.getAccountNumber(), request.getRequestType(), request.getCustNo(), request.getNameOnCard(), institutionCD, request.getBin(), request.getDeliveryOption());
+                bankserviceResponseJSON = cardWS.requestPtmfbCard(request.getAccountNumber(), request.getRequestType(), request.getCustNo(), customer.getFullname(), institutionCD, bin, request.getDeliveryOption());
 
                 RequestCardResponse bankResp = gs.fromJson(bankserviceResponseJSON, RequestCardResponse.class);
                 if (bankResp != null && bankResp.isSuccessful() == true) {
