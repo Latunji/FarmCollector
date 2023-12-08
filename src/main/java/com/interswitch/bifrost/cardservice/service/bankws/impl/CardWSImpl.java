@@ -187,6 +187,7 @@ public class CardWSImpl implements CardWS {
             acctReq.setClientUrl(configx.getBankCardBaseUrl(institutionCD) + "Cards/RetrieveCustomerCards");
             acctReq.setCustomerID(customerNo);
             acctReq.setToken(token);
+            acctReq.setInstitutionCD(institutionCD);
 
             okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
                     .connectTimeout(60, TimeUnit.SECONDS)
@@ -590,6 +591,7 @@ public class CardWSImpl implements CardWS {
             acctReq.setDeliveryOption(deliveryOption);
             acctReq.setIdentifier("REQ00904930");
             acctReq.setToken(token);
+            acctReq.setInstitutionCD(institutionCD);
 
             okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
                     .connectTimeout(60, TimeUnit.SECONDS)
@@ -634,6 +636,7 @@ public class CardWSImpl implements CardWS {
             acctReq.setReference(reference);
             acctReq.setClientUrl(configx.getBankCardBaseUrl(institutionCD) + "Cards/HotlistCard");
             acctReq.setToken(token);
+            acctReq.setInstitutionCD(institutionCD);
 
             okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
                     .connectTimeout(60, TimeUnit.SECONDS)
@@ -678,6 +681,8 @@ public class CardWSImpl implements CardWS {
             acctReq.setSerialNo(serialNo);
             acctReq.setReference(reference);
             acctReq.setBlock(block);
+            acctReq.setInstitutionCD(institutionCD);
+
             if (block.equals(true)) {
                 acctReq.setClientUrl(configx.getBankCardBaseUrl(institutionCD) + "Cards/Freeze");
             } else {
