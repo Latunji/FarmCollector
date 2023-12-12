@@ -44,7 +44,6 @@ import java.util.Date;
 public class Customer implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "customerID")
     private Long id;
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateRegistered, dateCreated;
@@ -62,11 +61,6 @@ public class Customer implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date lastLoginTime;
     @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "uniqueId", column = @Column(name = "regDeviceUniqueId")),
-            @AttributeOverride(name = "model", column = @Column(name = "regDeviceModel")),
-            @AttributeOverride(name = "deviceName", column = @Column(name = "regDeviceName"))
-    })
     private Device regDevice; // uuid of the device the customer's registered with
     @Embedded
     private Location regInitiateLocation;

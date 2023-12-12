@@ -35,13 +35,10 @@ import java.util.Date;
 public class CustomerDevice implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "customerDeviceID")
     private Long id;
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "registerDate")
     private Date dateRegistered;
     @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "customerID")
     private Customer customer;
     @Embedded
     private Device device;

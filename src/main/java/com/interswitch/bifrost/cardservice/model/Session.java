@@ -29,17 +29,12 @@ public class Session implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "customerID")
     private Customer customer;
     @Temporal(TemporalType.TIMESTAMP)
     private Date startDate, endDate;
     @Embedded
     private Device originatingDevice;
     @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "longitude", column = @Column(name = "sessionLongitude")),
-            @AttributeOverride(name = "latitude", column = @Column(name = "sessionLatitude"))
-    })
     private Location location;
 
     public Long getId() {
