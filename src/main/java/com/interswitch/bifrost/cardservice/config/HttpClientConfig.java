@@ -1,5 +1,7 @@
 package com.interswitch.bifrost.cardservice.config;
 
+import lombok.RequiredArgsConstructor;
+import okhttp3.OkHttpClient;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -20,6 +22,10 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.cloud.square.okhttp.loadbalancer.OkHttpLoadBalancerInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,6 +35,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 @Configuration
+@RequiredArgsConstructor
 public class HttpClientConfig {
 
     private static final int DEFAULT_KEEP_ALIVE_TIME_MILLIS = 120 * 1000;
@@ -36,6 +43,22 @@ public class HttpClientConfig {
     private static final int SOCKET_TIMEOUT = 120000;
     private static int CONNECT_TIMEOUT = 60000;
     private static final int MAX_TOTAL_CONNECTIONS = 50;
+
+    private LoadBalancerClient loadBalancerClient;
+
+    @Bean
+    @LoadBalanced
+    @ConditionalOnProperty(name = "call-service-by-name.enabled", havingValue = "true")
+    public OkHttpClient.Builder loadBalancedOkHttpClientBuilder() {
+        return new OkHttpClient.Builder()
+                .addInterceptor(new OkHttpLoadBalancerInterceptor(loadBalancerClient));
+    }
+    @Bean
+    @ConditionalOnProperty(name = "call-service-by-name.enabled", havingValue = "false", matchIfMissing = true)
+    public OkHttpClient.Builder okHttpClientBuilder() {
+            return new OkHttpClient.Builder();
+    }
+
 
     @Bean
     public PoolingHttpClientConnectionManager poolingConnectionManager() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {

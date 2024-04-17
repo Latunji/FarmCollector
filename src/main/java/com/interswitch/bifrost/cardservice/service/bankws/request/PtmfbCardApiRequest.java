@@ -23,4 +23,5 @@ public class PtmfbCardApiRequest {
     private String customerID;
     private String accountNo;
     private boolean block;
+    private boolean includeInactiveCards;
 }

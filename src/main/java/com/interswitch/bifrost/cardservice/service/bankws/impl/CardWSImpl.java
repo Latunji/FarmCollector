@@ -188,6 +188,7 @@ public class CardWSImpl implements CardWS {
             acctReq.setCustomerID(customerNo);
             acctReq.setToken(token);
             acctReq.setInstitutionCD(institutionCD);
+            acctReq.setIncludeInactiveCards(true);
 
             okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
                     .connectTimeout(60, TimeUnit.SECONDS)
