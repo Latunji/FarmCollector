@@ -4,8 +4,11 @@ import com.api.farmcollector.enums.Crop;
 import com.api.farmcollector.enums.Season;
 import com.api.farmcollector.model.Farm;
 import com.api.farmcollector.model.Field;
+import com.api.farmcollector.repository.FarmRepository;
 import com.api.farmcollector.service.FarmService;
 import com.api.farmcollector.service.ReportService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -14,6 +17,9 @@ import java.util.Map;
 @Service
 public class ReportServiceImpl implements ReportService {
     private final FarmService farmService;
+
+    @Autowired
+    private FarmRepository farmRepository;
 
     public ReportServiceImpl(FarmService farmService) {
         this.farmService = farmService;
