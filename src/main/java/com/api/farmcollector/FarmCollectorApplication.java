@@ -1,4 +1,4 @@
-package com.interswitch.bifrost.cardservice;
+package com.api.farmcollector;
 
 import com.interswitch.bifrost.commons.adapter.CommonConfigurationAdapter;
 import com.interswitch.bifrost.commons.async.ContextAwarePoolExecutor;
@@ -16,7 +16,7 @@ import java.util.logging.LogManager;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableAsync
-public class CardServiceApplication extends CommonConfigurationAdapter{
+public class FarmCollectorApplication extends CommonConfigurationAdapter{
 
     static {
       LogManager.getLogManager().reset();
@@ -24,7 +24,7 @@ public class CardServiceApplication extends CommonConfigurationAdapter{
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(CardServiceApplication.class, args);
+        SpringApplication.run(FarmCollectorApplication.class, args);
     }
 
     @Bean(name="threadPool")
